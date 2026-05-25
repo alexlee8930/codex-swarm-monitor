@@ -170,7 +170,9 @@ function readHookCommand(workspace, eventName) {
 
 function runHook(command, cwd, payload) {
   return new Promise((resolveRun, rejectRun) => {
-    const child = spawn(process.platform === "win32" ? "cmd" : "sh", [process.platform === "win32" ? "/c" : "-c", command], {
+    const shell = process.platform === "win32" ? "cmd" : "sh";
+    const shellArgs = process.platform === "win32" ? ["/d", "/s", "/c", `"${command}"`] : ["-c", command];
+    const child = spawn(shell, shellArgs, {
       cwd,
       stdio: ["pipe", "pipe", "pipe"]
     });
