@@ -189,12 +189,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          find release-artifacts -maxdepth 3 -type f -print
+          mapfile -t release_assets < <(find release-artifacts dist -maxdepth 3 -type f \( -name '*.tar.gz' -o -name '*.tar.gz.sha256' -o -name '*.zip' -o -name '*.zip.sha256' \) -print | sort)
+          printf '%s\n' "${release_assets[@]}"
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --notes "Codex Swarm Monitor standalone runtime and Codex plugin package release." \
-            $(find release-artifacts -maxdepth 3 -type f -print) \
-            dist/codex-swarm-monitor-plugin-*.tar.gz \
-            dist/codex-swarm-monitor-plugin-*.tar.gz.sha256 \
-            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz \
-            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz.sha256
+            "${release_assets[@]}"

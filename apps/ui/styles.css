@@ -1,23 +1,25 @@
 :root {
   color-scheme: light;
-  --canvas: #f6f8fa;
-  --notebook: #ffffff;
+  --canvas: #f7f7f4;
+  --canvas-warm: #fbfaf7;
+  --notebook: #fffdfa;
   --paper: #ffffff;
-  --ink: #1f2328;
-  --muted: #656d76;
-  --faint: #8c959f;
-  --line: #d0d7de;
-  --soft-line: #eaeef2;
-  --hairline: #f0f2f4;
-  --wash: #f6f8fa;
-  --wash-strong: #eef4ff;
+  --ink: #202124;
+  --muted: #667085;
+  --faint: #98a2b3;
+  --line: #d9d5cc;
+  --soft-line: #ebe7de;
+  --hairline: #f2eee7;
+  --wash: #f7f7f5;
+  --wash-strong: #eef6ff;
   --warm: #fff8c5;
   --blue: #0969da;
   --green: #1f883d;
   --red: #cf222e;
   --purple: #8250df;
-  --shadow: 0 1px 2px rgba(31, 35, 40, 0.035), 0 8px 24px rgba(31, 35, 40, 0.026);
-  --deep-shadow: 0 16px 42px rgba(31, 35, 40, 0.064);
+  --shadow: 0 1px 2px rgba(32, 33, 36, 0.04), 0 10px 26px rgba(32, 33, 36, 0.035);
+  --deep-shadow: 0 24px 60px rgba(32, 33, 36, 0.075);
+  --inner-paper: inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
   --mono: "SF Mono", Monaco, Menlo, Consolas, monospace;
 }
@@ -30,10 +32,10 @@ body {
   margin: 0;
   min-width: 360px;
   background:
-    linear-gradient(rgba(208, 215, 222, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(208, 215, 222, 0.14) 1px, transparent 1px),
+    radial-gradient(circle at 1px 1px, rgba(152, 162, 179, 0.26) 1px, transparent 0),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(247, 247, 244, 0.94)),
     var(--canvas);
-  background-size: 40px 40px;
+  background-size: 22px 22px, 100% 100%;
   color: var(--ink);
   font-family: var(--sans);
   font-size: 14px;
@@ -45,11 +47,12 @@ input {
 }
 
 button {
-  background: var(--ink);
-  border: 1px solid var(--ink);
+  background: #24292f;
+  border: 1px solid rgba(32, 33, 36, 0.86);
   border-radius: 6px;
   color: #fff;
   cursor: pointer;
+  font-weight: 650;
   line-height: 1.15;
   min-height: 36px;
   padding: 0 14px;
@@ -86,13 +89,13 @@ button.danger {
 
 .topbar {
   align-items: center;
-  backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.97);
-  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(217, 213, 204, 0.72);
   display: grid;
   gap: 12px 18px;
   grid-template-columns: minmax(220px, max-content) minmax(0, 1fr);
-  padding: 13px 32px 14px;
+  padding: 14px 34px;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -106,10 +109,11 @@ button.danger {
 
 .brand-mark {
   align-items: center;
-  background: linear-gradient(180deg, #24292f, #1f2328);
+  background: #ffffff;
+  border: 1px solid rgba(32, 33, 36, 0.12);
   border-radius: 8px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 1px 2px rgba(31, 35, 40, 0.12);
-  color: white;
+  box-shadow: var(--shadow);
+  color: #24292f;
   display: flex;
   font-weight: 800;
   height: 36px;
@@ -130,7 +134,7 @@ h1 {
 
 .repo-nav {
   align-items: center;
-  background: var(--wash);
+  background: rgba(247, 247, 245, 0.88);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
   display: flex;
@@ -166,9 +170,10 @@ h1 {
 }
 
 .workspace-picker {
-  background: rgba(246, 248, 250, 0.76);
+  background: rgba(255, 255, 255, 0.84);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
+  box-shadow: var(--inner-paper);
   display: grid;
   gap: 8px;
   grid-column: 1 / -1;
@@ -177,7 +182,7 @@ h1 {
 }
 
 .workspace-picker input {
-  background: var(--paper);
+  background: #fff;
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--ink);
@@ -195,8 +200,8 @@ h1 {
 }
 
 .launch-strip {
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid var(--soft-line);
+  background: rgba(251, 250, 247, 0.88);
+  border-bottom: 1px solid rgba(235, 231, 222, 0.9);
   display: grid;
   gap: 0;
   grid-template-columns: minmax(420px, 1.55fr) minmax(260px, 1fr) minmax(170px, 0.62fr) minmax(220px, 0.78fr);
@@ -204,7 +209,7 @@ h1 {
 }
 
 .repo-command-strip {
-  box-shadow: inset 0 -1px 0 rgba(31, 35, 40, 0.02);
+  box-shadow: inset 0 -1px 0 rgba(32, 33, 36, 0.025);
 }
 
 .launch-strip div {
@@ -247,7 +252,7 @@ h1 {
 }
 
 .launch-strip code {
-  background: var(--wash);
+  background: #ffffff;
   border: 1px solid var(--soft-line);
   border-radius: 6px;
   font-family: var(--mono);
@@ -318,10 +323,10 @@ h1 {
 
 .lifecycle-step {
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), var(--inner-paper);
   display: grid;
   gap: 11px;
   grid-template-columns: 30px minmax(0, 1fr);
@@ -438,17 +443,17 @@ h1 {
 .status-strip div,
 .panel,
 .canvas-panel {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), var(--inner-paper);
 }
 
 .status-strip div {
   border-top: 0;
   display: grid;
   gap: 2px;
-  min-height: 82px;
+  min-height: 78px;
   padding: 15px 16px;
   position: relative;
 }
@@ -546,7 +551,7 @@ h1 {
 }
 
 .canvas-panel {
-  border-color: rgba(208, 215, 222, 0.86);
+  border-color: rgba(217, 213, 204, 0.86);
   box-shadow: var(--deep-shadow);
   overflow: hidden;
   padding: 0;
@@ -561,29 +566,28 @@ h1 {
 }
 
 .canvas-toolbar {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid var(--hairline);
   padding: 18px 22px;
 }
 
 .canvas-proof-strip {
   align-items: center;
-  background: #fbfbfa;
+  background: #fbfaf7;
   border-bottom: 1px solid var(--soft-line);
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .canvas-proof-strip span {
   border-right: 1px solid var(--soft-line);
   color: var(--muted);
-  font-size: 12px;
+  flex: 1 1 132px;
+  font-size: 11px;
   font-weight: 650;
   min-width: 0;
-  overflow: hidden;
-  padding: 10px 14px;
-  text-overflow: ellipsis;
+  padding: 10px 12px;
   white-space: nowrap;
 }
 
@@ -766,7 +770,7 @@ h1 {
 }
 
 .repo-context-item {
-  background: linear-gradient(180deg, #ffffff, #fffefa);
+  background: linear-gradient(180deg, #ffffff, #fffdfa);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
   display: grid;
@@ -1009,10 +1013,10 @@ h1 {
 
 .harness-canvas {
   background:
-    linear-gradient(rgba(208, 215, 222, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(208, 215, 222, 0.13) 1px, transparent 1px),
+    radial-gradient(circle at 1px 1px, rgba(152, 162, 179, 0.28) 1px, transparent 0),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 253, 248, 0.56)),
     var(--notebook);
-  background-size: 28px 28px;
+  background-size: 20px 20px, 100% 100%;
   border: 0;
   border-bottom: 1px solid var(--hairline);
   border-radius: 0;
@@ -1024,7 +1028,7 @@ h1 {
 
 .harness-canvas::before {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 248, 0.58));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 253, 248, 0.38));
   content: "";
   inset: 0;
   pointer-events: none;
@@ -1042,9 +1046,10 @@ h1 {
 }
 
 .canvas-board-header > div:first-child {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
+  box-shadow: var(--shadow);
   display: grid;
   gap: 7px;
   min-height: 86px;
@@ -1077,9 +1082,10 @@ h1 {
 }
 
 .canvas-board-stats article {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
+  box-shadow: var(--shadow);
   display: grid;
   gap: 4px;
   min-height: 86px;
@@ -1159,9 +1165,10 @@ h1 {
 }
 
 .ralph-stage {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
+  box-shadow: var(--shadow);
   display: grid;
   gap: 9px;
   grid-template-columns: 28px minmax(0, 1fr);
@@ -1214,9 +1221,10 @@ h1 {
 }
 
 .ralph-evidence section {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
+  box-shadow: var(--shadow);
   min-width: 0;
   padding: 12px;
 }
@@ -1299,7 +1307,7 @@ h1 {
 }
 
 .harness-detail {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--soft-line);
   border-radius: 8px;
   display: grid;
@@ -1324,7 +1332,7 @@ h1 {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 253, 248, 0.96));
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 1px 1px rgba(31, 35, 40, 0.035);
+  box-shadow: var(--shadow);
   min-height: 122px;
   padding: 13px;
   position: relative;
@@ -1377,7 +1385,8 @@ h1 {
 
 .canvas-caption {
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.86);
   border-top: 1px solid var(--soft-line);
   bottom: 0;
   display: flex;
@@ -1705,10 +1714,10 @@ h1 {
 }
 
 .agent-card {
-  background: linear-gradient(180deg, #ffffff, #fffefa);
+  background: linear-gradient(180deg, #ffffff, #fffdfa);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+  box-shadow: var(--shadow);
   display: grid;
   gap: 12px;
   grid-template-columns: 68px minmax(0, 1fr);
@@ -1744,10 +1753,10 @@ h1 {
 }
 
 .avatar {
-  background: #fffefa;
-  border: 1px solid rgba(31, 35, 40, 0.14);
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(31, 35, 40, 0.075);
+  background: #fffdfa;
+  border: 1px solid rgba(32, 33, 36, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(32, 33, 36, 0.08);
   height: 64px;
   object-fit: cover;
   width: 64px;
