@@ -128,7 +128,9 @@ function assertWindowsBootstrapShape(path) {
   assert.match(script, /CODEX_SWARM_RELEASE_BASE/);
   assert.match(script, /releases\/download\/\$releaseVersion/);
   assert.match(script, /pluginRepository/);
-  assert.match(script, /Get-FileHash -Algorithm SHA256/);
+  assert.match(script, /function Get-Sha256/);
+  assert.match(script, /Get-Command Get-FileHash/);
+  assert.match(script, /SHA256Managed/);
   assert.match(script, /tar -xzf/);
   assert.match(script, /install\.ps1/);
   assert.match(script, /standalone install failed/);

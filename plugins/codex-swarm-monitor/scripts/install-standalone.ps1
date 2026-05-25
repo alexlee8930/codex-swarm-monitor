@@ -29,6 +29,25 @@ Set CODEX_SWARM_RELEASE_DIR to a folder containing the archive/checksum, or publ
 "@
 }
 
+function Get-Sha256($path) {
+  if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+    return (Get-FileHash -Algorithm SHA256 $path).Hash.ToLowerInvariant()
+  }
+
+  $stream = [System.IO.File]::OpenRead($path)
+  try {
+    $sha = [System.Security.Cryptography.SHA256Managed]::Create()
+    try {
+      $hash = $sha.ComputeHash($stream)
+      return ([System.BitConverter]::ToString($hash)).Replace("-", "").ToLowerInvariant()
+    } finally {
+      $sha.Dispose()
+    }
+  } finally {
+    $stream.Dispose()
+  }
+}
+
 $name = "codex-swarm-monitor-$target"
 $archive = "$name.tar.gz"
 $checksum = "$archive.sha256"
@@ -58,7 +77,7 @@ try {
   }
 
   $expected = ((Get-Content $checksumPath -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
-  $actual = (Get-FileHash -Algorithm SHA256 $archivePath).Hash.ToLowerInvariant()
+  $actual = Get-Sha256 $archivePath
   if ($actual -ne $expected) {
     Fail-Install "checksum mismatch for $archive"
   }
