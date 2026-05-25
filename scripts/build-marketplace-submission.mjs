@@ -51,6 +51,8 @@ const submission = {
   verification: [
     "npm run verify",
     "npm run release:artifacts -- dist",
+    "npm run release:remote-smoke",
+    "CODEX_SWARM_REQUIRE_CODEX_PLUGIN_SMOKE=1 npm run codex-plugin:smoke",
     "npm run marketplace:submission:smoke",
     "codex plugin add codex-swarm-monitor@codex-swarm-monitor"
   ]

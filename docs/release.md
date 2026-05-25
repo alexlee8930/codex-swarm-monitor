@@ -125,6 +125,8 @@ Before submitting, build and review the packaged marketplace submission:
 npm run marketplace:submission
 tar -tzf dist/codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz
 sed -n '1,220p' plugins/codex-swarm-monitor/MARKETPLACE.md
+npm run release:remote-smoke
+CODEX_SWARM_REQUIRE_CODEX_PLUGIN_SMOKE=1 npm run codex-plugin:smoke
 ```
 
 Publish `codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz` to the target Codex marketplace using the marketplace publishing process. After publication, verify from a clean Codex install:

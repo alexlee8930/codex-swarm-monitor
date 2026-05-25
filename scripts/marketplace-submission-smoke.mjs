@@ -31,6 +31,8 @@ try {
   assert.match(submission.userPromise, /Codex only/);
   assert.match(submission.userPromise, /do not install Node, npm, Bun, OMX/);
   assert.match(submission.installCommand, /codex plugin add codex-swarm-monitor@codex-swarm-monitor/);
+  assert.ok(submission.verification.includes("npm run release:remote-smoke"));
+  assert.ok(submission.verification.includes("CODEX_SWARM_REQUIRE_CODEX_PLUGIN_SMOKE=1 npm run codex-plugin:smoke"));
   assert.equal(releaseAssets.length, 10);
   assert.ok(releaseAssets.every((asset) => /^[a-f0-9]{64}$/.test(asset.sha256)));
   assert.equal(existsSync(join(extractedRoot, submission.artifacts.pluginArchive)), true);

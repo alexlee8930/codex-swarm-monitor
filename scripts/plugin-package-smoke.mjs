@@ -28,7 +28,7 @@ try {
 
   assert.equal(pluginJson.name, "codex-swarm-monitor");
   assert.equal(pluginJson.version, manifest.version);
-  assert.equal(pluginJson.interface.screenshots[0].path, "./assets/screenshots/dashboard-desktop.png");
+  assert.equal(pluginJson.interface.screenshots[0], "./assets/screenshots/dashboard-desktop.png");
   assert.equal(marketplace.plugins[0].name, pluginJson.name);
   assert.equal(marketplace.plugins[0].source.path, "./codex-swarm-monitor");
   assert.equal(existsSync(join(extractedRoot, marketplace.plugins[0].source.path)), true);

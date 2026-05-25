@@ -53,6 +53,8 @@ Before marketplace publication, run:
 ```bash
 npm run verify
 npm run release:audit
+npm run release:remote-smoke
+CODEX_SWARM_REQUIRE_CODEX_PLUGIN_SMOKE=1 npm run codex-plugin:smoke
 npm run codex-only:smoke
 npm run plugin:package
 npm run release:artifacts -- dist

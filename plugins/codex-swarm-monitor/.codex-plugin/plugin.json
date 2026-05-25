@@ -36,10 +36,7 @@
     ],
     "brandColor": "#0969DA",
     "screenshots": [
-      {
-        "path": "./assets/screenshots/dashboard-desktop.png",
-        "label": "Realtime local workspace dashboard with Ralph loop analysis"
-      }
+      "./assets/screenshots/dashboard-desktop.png"
     ]
   }
 }
