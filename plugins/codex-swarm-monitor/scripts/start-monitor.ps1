@@ -77,7 +77,8 @@ Original error: $($_.Exception.Message)
   $launcher = Get-Command codex-swarm-monitor.cmd -ErrorAction SilentlyContinue
 }
 if (-not $launcher) {
-  $defaultLauncher = Join-Path $env:LOCALAPPDATA "CodexSwarmMonitor\bin\codex-swarm-monitor.cmd"
+  $defaultPrefix = if ($env:PREFIX) { $env:PREFIX } else { Join-Path $env:LOCALAPPDATA "CodexSwarmMonitor" }
+  $defaultLauncher = Join-Path $defaultPrefix "bin\codex-swarm-monitor.cmd"
   if (Test-Path $defaultLauncher) {
     $launcher = @{ Source = $defaultLauncher }
   }
