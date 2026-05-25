@@ -46,8 +46,11 @@ if (!target.startsWith("darwin-")) {
     assert.equal(existsSync(join(appBundle, "Contents/PkgInfo")), true);
     assert.equal(existsSync(executable), true);
     assert.ok((statSync(executable).mode & 0o111) !== 0, "downloaded app launcher should be executable");
+    assert.notEqual(readFileSync(executable).subarray(0, 2).toString("utf8"), "#!", "downloaded app executable must be a native binary, not a shell browser launcher");
     assert.equal(desktopManifest.target, target);
     assert.equal(desktopManifest.version, version);
+    assert.equal(desktopManifest.nativeWebView, true);
+    assert.equal(desktopManifest.shellOpensBrowser, false);
     assert.equal(existsSync(join(embeddedStandalone, "manifest.json")), true);
     assert.equal(existsSync(join(embeddedStandalone, "bin/codex-swarm-monitor")), true);
 

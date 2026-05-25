@@ -1,6 +1,6 @@
 # Public Release Runbook
 
-This runbook is the release path for the app-first "Codex only" user promise. A public user should install Codex, download the Codex Swarm Monitor app or standalone release bundle, and start the local monitor without installing Node, npm, Bun, OMX, or this source checkout. Codex marketplace publication is an optional distribution path, not a required launch blocker.
+This runbook is the release path for the app-first "Codex only" user promise. A public user should install Codex, download the Codex Swarm Monitor macOS app or standalone release bundle, and start the local monitor without installing Node, npm, Bun, OMX, or this source checkout. The macOS app renders the local monitor in its own native WebKit window instead of opening the default browser. Codex marketplace publication is an optional distribution path, not a required launch blocker.
 
 ## Release Gate
 

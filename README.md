@@ -15,7 +15,7 @@ tar -xzf codex-swarm-monitor-darwin-<arch>.app.tar.gz
 open "Codex Swarm Monitor.app"
 ```
 
-The app opens the local monitor without installing hooks into `$HOME`. Pick the real Codex workspace in the UI, then install hooks for that project only.
+The app opens the local monitor inside its own macOS window. It does not open your default browser and does not install hooks into `$HOME`. Pick the real Codex workspace in the UI, then install hooks for that project only.
 
 Fallback direct standalone path, after downloading a release bundle for your OS:
 

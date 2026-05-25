@@ -33,9 +33,12 @@ const checksumFile = join(root, manifest.checksumFile);
 assert.equal(manifest.name, "codex-swarm-monitor-desktop-app");
 assert.equal(manifest.bundle, "Codex Swarm Monitor.app");
 assert.match(manifest.target, /^darwin-(arm64|x64)$/);
+assert.equal(manifest.nativeWebView, true);
+assert.equal(manifest.shellOpensBrowser, false);
 assert.equal(existsSync(appBundle), true);
 assert.equal(existsSync(executable), true);
 assert.ok((statSync(executable).mode & 0o111) !== 0, "app launcher should be executable");
+assert.notEqual(readFileSync(executable).subarray(0, 2).toString("utf8"), "#!", "app executable must be a native binary, not a shell browser launcher");
 assert.equal(existsSync(join(appBundle, "Contents/Info.plist")), true);
 assert.equal(existsSync(join(appBundle, "Contents/PkgInfo")), true);
 assert.equal(existsSync(join(resources, "README-DESKTOP-APP.md")), true);
@@ -58,6 +61,8 @@ assert.match(plist, new RegExp(`<key>CFBundleShortVersionString<\\/key>\\s*<stri
 const desktopManifest = JSON.parse(readFileSync(join(resources, "desktop-manifest.json"), "utf8"));
 assert.equal(desktopManifest.target, manifest.target);
 assert.equal(desktopManifest.embeddedStandalone, manifest.embeddedStandalone);
+assert.equal(desktopManifest.nativeWebView, true);
+assert.equal(desktopManifest.shellOpensBrowser, false);
 assert.equal(Object.hasOwn(desktopManifest, "checksum"), false);
 
 if (manifest.target === `${process.platform}-${process.arch}`) {
