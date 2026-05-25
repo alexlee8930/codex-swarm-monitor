@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -97,13 +97,26 @@ function releaseAssetManifest() {
     pluginChecksumName
   ];
   return names.map((name) => {
-    const path = join(distRoot, name);
+    const path = findReleaseAsset(name);
     assert.equal(existsSync(path), true, `${name} must exist before building marketplace submission`);
     return {
       name,
       size: statSync(path).size,
       sha256: sha256(path)
     };
+  });
+}
+
+function findReleaseAsset(name) {
+  const roots = [distRoot, join(root, "release-artifacts")];
+  return roots.flatMap((dir) => listFiles(dir)).find((path) => basename(path) === name) || join(distRoot, name);
+}
+
+function listFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(dir, entry.name);
+    return entry.isDirectory() ? listFiles(fullPath) : [fullPath];
   });
 }
 
