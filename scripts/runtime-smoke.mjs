@@ -124,7 +124,7 @@ try {
     assert.match(renderedDom, /Replay recovery/);
     assert.match(renderedDom, /Last-Event-ID ready/);
     assert.match(renderedDom, /Connected to this monitor/);
-    assert.match(renderedDom, /Only Codex is required for end users/);
+    assert.match(renderedDom, /Only Codex is required for end users|Install and sign in to Codex first/);
     assert.match(renderedDom, /Project-local hook/);
     assert.match(renderedDom, /Agent cards appear only after real Codex hook or MCP events|Agent cards and logs come from actual hook payloads/);
     assert.match(renderedDom, /Finish publishing/);
