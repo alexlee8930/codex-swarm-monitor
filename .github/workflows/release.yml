@@ -127,12 +127,14 @@ jobs:
       - name: Smoke standalone bundle
         run: npm run standalone:smoke
 
+      - name: Build and smoke macOS app wrapper
+        if: runner.os == 'macOS'
+        run: node scripts/desktop-app-smoke.mjs --target ${{ matrix.artifact }} --no-build-standalone
+
       - name: Generate artifact provenance attestation
         uses: actions/attest@v4
         with:
-          subject-path: |
-            dist/${{ matrix.artifact }}.tar.gz
-            dist/${{ matrix.artifact }}.tar.gz.sha256
+          subject-path: dist/${{ matrix.artifact }}*
 
       - name: Upload standalone archive
         uses: actions/upload-artifact@v7

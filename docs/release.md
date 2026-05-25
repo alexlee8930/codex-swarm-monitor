@@ -55,6 +55,8 @@ The GitHub release workflow builds these standalone archives and `.sha256` files
 - `codex-swarm-monitor-darwin-arm64.tar.gz`
 - `codex-swarm-monitor-darwin-x64.tar.gz`
 - `codex-swarm-monitor-win32-x64.tar.gz`
+- `codex-swarm-monitor-darwin-arm64.app.tar.gz`
+- `codex-swarm-monitor-darwin-x64.app.tar.gz`
 
 ## Collect And Verify Assets
 
@@ -88,6 +90,8 @@ The release must include:
 
 - all four standalone archives
 - all four standalone `.sha256` checksum files
+- both macOS `.app` wrapper archives
+- both macOS `.app` wrapper `.sha256` checksum files
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz`
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz.sha256`
 - `codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz`

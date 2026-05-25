@@ -42,7 +42,9 @@ test("release readiness recognizes nested GitHub artifact downloads", async () =
       "codex-swarm-monitor-linux-x64.tar.gz",
       "codex-swarm-monitor-darwin-arm64.tar.gz",
       "codex-swarm-monitor-darwin-x64.tar.gz",
-      "codex-swarm-monitor-win32-x64.tar.gz"
+      "codex-swarm-monitor-win32-x64.tar.gz",
+      "codex-swarm-monitor-darwin-arm64.app.tar.gz",
+      "codex-swarm-monitor-darwin-x64.app.tar.gz"
     ];
     for (const archive of archives) {
       const folder = join(dir, "dist", archive.replace(".tar.gz", ""));
@@ -62,6 +64,8 @@ test("release readiness recognizes nested GitHub artifact downloads", async () =
     const summary = releaseReadiness(dir, { inspectPublished: false });
     assert.equal(summary.checks.find((item) => item.id === "standalone-archives").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "standalone-checksums").ok, true);
+    assert.equal(summary.checks.find((item) => item.id === "desktop-apps").ok, true);
+    assert.equal(summary.checks.find((item) => item.id === "desktop-app-checksums").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "plugin-package").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "marketplace-submission").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "codex-marketplace-publication").ok, false);

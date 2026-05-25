@@ -18,7 +18,9 @@ test("release artifact verifier separates standalone-only and full release check
       "codex-swarm-monitor-linux-x64.tar.gz",
       "codex-swarm-monitor-darwin-arm64.tar.gz",
       "codex-swarm-monitor-darwin-x64.tar.gz",
-      "codex-swarm-monitor-win32-x64.tar.gz"
+      "codex-swarm-monitor-win32-x64.tar.gz",
+      "codex-swarm-monitor-darwin-arm64.app.tar.gz",
+      "codex-swarm-monitor-darwin-x64.app.tar.gz"
     ];
     for (const archive of archives) {
       await writeArtifactPair(join(standaloneDir, archive.replace(".tar.gz", "")), archive, 1_000_001);
@@ -42,7 +44,7 @@ test("release artifact verifier separates standalone-only and full release check
         cwd: root,
         encoding: "utf8"
       }),
-      /release artifact set ok: 12 files/
+      /release artifact set ok: 16 files/
     );
   } finally {
     rmSync(dir, { recursive: true, force: true });

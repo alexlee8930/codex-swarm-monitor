@@ -30,6 +30,17 @@ for (const target of targets) {
   assert.equal(manifest.target, target);
   assert.ok(manifest.checksum, `${target} checksum should be present`);
   console.log(`built ${manifest.archive}`);
+  if (target.startsWith("darwin-")) {
+    const desktopManifest = JSON.parse(
+      execFileSync(process.execPath, ["scripts/build-desktop-app.mjs", "--target", target, "--no-build-standalone"], {
+        cwd: root,
+        encoding: "utf8"
+      })
+    );
+    assert.equal(desktopManifest.target, target);
+    assert.ok(desktopManifest.checksum, `${target} desktop app checksum should be present`);
+    console.log(`built ${desktopManifest.archive}`);
+  }
 }
 
 execFileSync(process.execPath, ["scripts/verify-release-artifacts.mjs", "--standalone-only", "dist"], {

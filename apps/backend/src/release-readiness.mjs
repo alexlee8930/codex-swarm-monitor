@@ -16,7 +16,12 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
     "codex-swarm-monitor-darwin-x64.tar.gz",
     "codex-swarm-monitor-win32-x64.tar.gz"
   ];
+  const requiredDesktopApps = [
+    "codex-swarm-monitor-darwin-arm64.app.tar.gz",
+    "codex-swarm-monitor-darwin-x64.app.tar.gz"
+  ];
   const requiredChecksums = requiredArchives.map((name) => `${name}.sha256`);
+  const requiredDesktopAppChecksums = requiredDesktopApps.map((name) => `${name}.sha256`);
   const requiredPluginArtifacts = [
     `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz`,
     `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz.sha256`
@@ -25,7 +30,14 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
     `codex-swarm-monitor-marketplace-submission-${packageJson.version}.tar.gz`,
     `codex-swarm-monitor-marketplace-submission-${packageJson.version}.tar.gz.sha256`
   ];
-  const requiredReleaseAssets = [...requiredArchives, ...requiredChecksums, ...requiredPluginArtifacts, ...requiredMarketplaceSubmission];
+  const requiredReleaseAssets = [
+    ...requiredArchives,
+    ...requiredChecksums,
+    ...requiredDesktopApps,
+    ...requiredDesktopAppChecksums,
+    ...requiredPluginArtifacts,
+    ...requiredMarketplaceSubmission
+  ];
   const originRemote = git(packageRoot, ["remote", "get-url", "origin"]);
   const pluginManifest = readPluginManifest(packageRoot);
   const pluginRepository = pluginManifest?.repository || "";
@@ -48,6 +60,12 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
     }),
     checkArtifacts(packageRoot, "standalone-checksums", "All platform standalone checksums built", requiredChecksums, {
       remediation: "Generate and publish matching .sha256 files for every standalone archive."
+    }),
+    checkArtifacts(packageRoot, "desktop-apps", "macOS app wrapper archives built", requiredDesktopApps, {
+      remediation: "Run npm run desktop:smoke on macOS, or npm run standalone:build:all to build the macOS .app archives."
+    }),
+    checkArtifacts(packageRoot, "desktop-app-checksums", "macOS app wrapper checksums built", requiredDesktopAppChecksums, {
+      remediation: "Generate and publish matching .sha256 files for every macOS .app archive."
     }),
     checkArtifacts(packageRoot, "plugin-package", "Codex plugin release package built", requiredPluginArtifacts, {
       remediation: "Run npm run plugin:package before creating the GitHub release."
@@ -197,8 +215,8 @@ function releasePlan({ checks, version, tag }) {
       id: "collect-artifacts",
       label: "Collect platform artifacts",
       command: "npm run standalone:build:all",
-      state: ok("standalone-archives") && ok("standalone-checksums") ? "done" : ok("version-tag") ? "ready" : "blocked",
-      detail: "Builds all platform bundles from official Node runtimes. GitHub workflow downloads are also accepted under dist/."
+      state: ok("standalone-archives") && ok("standalone-checksums") && ok("desktop-apps") && ok("desktop-app-checksums") ? "done" : ok("version-tag") ? "ready" : "blocked",
+      detail: "Builds all platform bundles plus macOS app wrappers from official Node runtimes. GitHub workflow downloads are also accepted under dist/."
     },
     {
       id: "package-plugin",
@@ -218,15 +236,15 @@ function releasePlan({ checks, version, tag }) {
       id: "verify-release-assets",
       label: "Verify release asset set",
       command: "npm run release:artifacts -- dist",
-      state: ok("standalone-archives") && ok("standalone-checksums") ? "ready" : "blocked",
+      state: ok("standalone-archives") && ok("standalone-checksums") && ok("desktop-apps") && ok("desktop-app-checksums") ? "ready" : "blocked",
       detail: "Confirms every required archive and checksum exists before publishing."
     },
     {
       id: "publish-github-release",
       label: "Publish GitHub release",
       command: releaseCreateCommand(tag),
-      state: ok("standalone-archives") && ok("standalone-checksums") && ok("plugin-package") && ok("plugin-release-source") ? "ready" : "blocked",
-      detail: "Uploads standalone bundles, checksums, and the Codex plugin package."
+      state: ok("standalone-archives") && ok("standalone-checksums") && ok("desktop-apps") && ok("desktop-app-checksums") && ok("plugin-package") && ok("plugin-release-source") ? "ready" : "blocked",
+      detail: "Uploads standalone bundles, macOS app wrappers, checksums, and the Codex plugin package."
     },
     {
       id: "publish-codex-marketplace",

@@ -16,6 +16,10 @@ const requiredArchives = [
   "codex-swarm-monitor-darwin-x64.tar.gz",
   "codex-swarm-monitor-win32-x64.tar.gz"
 ];
+const requiredDesktopAppArchives = [
+  "codex-swarm-monitor-darwin-arm64.app.tar.gz",
+  "codex-swarm-monitor-darwin-x64.app.tar.gz"
+];
 const requiredPluginFiles = [
   `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz`,
   `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz.sha256`
@@ -26,6 +30,7 @@ const requiredMarketplaceSubmissionFiles = [
 ];
 const requiredFiles = [
   ...requiredArchives.flatMap((name) => [name, `${name}.sha256`]),
+  ...requiredDesktopAppArchives.flatMap((name) => [name, `${name}.sha256`]),
   ...(standaloneOnly ? [] : [...requiredPluginFiles, ...requiredMarketplaceSubmissionFiles])
 ];
 const available = new Set(inputDirs.flatMap((dir) => listFiles(dir)).map((path) => basename(path)));
@@ -34,6 +39,13 @@ const missing = requiredFiles.filter((name) => !available.has(name));
 assert.deepEqual(missing, [], `release artifact set is incomplete: missing ${missing.join(", ")}`);
 
 for (const archiveName of requiredArchives) {
+  const archivePath = findFile(inputDirs, archiveName);
+  const checksumPath = findFile(inputDirs, `${archiveName}.sha256`);
+  assert.ok(statSync(archivePath).size > 1_000_000, `${archiveName} should include a bundled runtime`);
+  assert.match(readFileSync(checksumPath, "utf8"), new RegExp(`^[a-f0-9]{64}  ${escapeRegex(archiveName)}\\r?\\n?$`));
+}
+
+for (const archiveName of requiredDesktopAppArchives) {
   const archivePath = findFile(inputDirs, archiveName);
   const checksumPath = findFile(inputDirs, `${archiveName}.sha256`);
   assert.ok(statSync(archivePath).size > 1_000_000, `${archiveName} should include a bundled runtime`);

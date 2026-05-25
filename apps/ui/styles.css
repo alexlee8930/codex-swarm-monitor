@@ -2117,3 +2117,548 @@ h1 {
     display: none;
   }
 }
+
+/* Minimal app shell: Codex/Notion-style navigation with a focused live workspace. */
+body {
+  background: #f7f7f5;
+}
+
+.notion-app-shell {
+  display: grid;
+  grid-template-columns: 292px minmax(0, 1fr);
+  max-width: none;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.app-sidebar {
+  align-content: start;
+  background: #fbfbfa;
+  border-right: 1px solid #e6e4df;
+  display: grid;
+  gap: 16px;
+  height: 100vh;
+  overflow: auto;
+  padding: 18px 16px;
+  position: sticky;
+  top: 0;
+}
+
+.app-sidebar .brand {
+  padding: 2px 2px 4px;
+}
+
+.brand-mark {
+  background: #ffffff;
+  border-color: #dedbd2;
+  box-shadow: none;
+}
+
+.repo-nav {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 2px;
+  justify-self: stretch;
+  padding: 0;
+  width: 100%;
+}
+
+.repo-nav a {
+  align-items: center;
+  border-radius: 6px;
+  color: #5f6368;
+  display: flex;
+  min-height: 30px;
+  padding: 6px 8px;
+}
+
+.repo-nav a:hover {
+  background: #efefed;
+  box-shadow: none;
+}
+
+.workspace-picker {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+}
+
+.workspace-picker input {
+  background: #ffffff;
+  grid-column: 1 / -1;
+  min-height: 34px;
+}
+
+.workspace-picker button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.workspace-picker button[type="submit"],
+#connect-workspace,
+#disconnect-workspace {
+  grid-column: 1 / -1;
+}
+
+.workspace-layout {
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr) 342px;
+  min-width: 0;
+  padding: 0;
+}
+
+.app-main {
+  background: #ffffff;
+  min-width: 0;
+  padding: 22px 28px 44px;
+}
+
+.app-main-header {
+  align-items: center;
+  background: #ffffff;
+  border: 0;
+  border-bottom: 1px solid #eceae6;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin: -22px -28px 18px;
+  padding: 18px 28px;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+}
+
+.app-main-header h2 {
+  font-size: 22px;
+  font-weight: 680;
+}
+
+.stream-status-card {
+  align-items: flex-end;
+  border: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  min-width: 190px;
+  padding: 0;
+}
+
+.stream-status-card strong {
+  background: #eef7ee;
+  border: 1px solid rgba(31, 136, 61, 0.18);
+  border-radius: 999px;
+  color: var(--green);
+  font-size: 12px;
+  min-height: 26px;
+  padding: 5px 10px;
+}
+
+.stream-status-card.connecting strong,
+.stream-status-card.reconnecting strong {
+  background: #fff9df;
+  border-color: rgba(212, 167, 44, 0.25);
+  color: #7d4e00;
+}
+
+.stream-status-card span {
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 260px;
+}
+
+.status-strip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0 0 14px;
+}
+
+.status-strip div {
+  background: #fafafa;
+  border: 1px solid #eceae6;
+  border-radius: 7px;
+  box-shadow: none;
+  min-height: 66px;
+  padding: 12px;
+}
+
+.status-strip div::before {
+  display: none;
+}
+
+.status-strip strong {
+  font-size: 20px;
+  font-weight: 680;
+}
+
+.launch-strip {
+  background: #ffffff;
+  border: 1px solid #eceae6;
+  border-radius: 8px;
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(160px, 0.7fr);
+  margin-bottom: 18px;
+  padding: 0;
+}
+
+.launch-strip div {
+  min-height: 42px;
+  padding: 8px 10px;
+}
+
+.launch-strip code {
+  background: #f7f7f5;
+  border-color: #e6e4df;
+}
+
+.canvas-panel,
+.panel {
+  background: #ffffff;
+  border: 1px solid #eceae6;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.canvas-panel {
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+.canvas-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid #f0efeb;
+  min-height: 58px;
+  padding: 14px 16px;
+}
+
+.canvas-toolbar h2,
+.panel-title h2 {
+  font-size: 14px;
+  font-weight: 680;
+}
+
+.canvas-toolbar > span,
+.panel-title span,
+details.panel summary em {
+  background: #f5f5f3;
+  border: 1px solid #e8e6df;
+  border-radius: 999px;
+  color: #6b7280;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 650;
+  min-height: 22px;
+  padding: 3px 8px;
+}
+
+.canvas-proof-strip {
+  background: #fafafa;
+  border-bottom: 1px solid #eceae6;
+  display: flex;
+}
+
+.canvas-proof-strip span {
+  color: #6b7280;
+  flex: 1 1 auto;
+  font-size: 11px;
+  padding: 8px 10px;
+}
+
+.agents-section {
+  padding: 0;
+}
+
+.agent-grid {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin: 0;
+  padding: 16px;
+}
+
+.agent-card {
+  background: #ffffff;
+  border-color: #e6e4df;
+  box-shadow: none;
+  grid-template-columns: 52px minmax(0, 1fr);
+  padding: 12px;
+}
+
+.agent-card.working,
+.agent-card.active,
+.agent-card.online,
+.agent-card.blocked {
+  box-shadow: none;
+}
+
+.agent-card::before {
+  display: none;
+}
+
+.avatar {
+  border-radius: 10px;
+  box-shadow: none;
+  height: 48px;
+  width: 48px;
+}
+
+.agent-task {
+  background: #f7f7f5;
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.swarm-graph {
+  border-top: 1px solid #f0efeb;
+  margin: 0;
+  padding: 12px 16px 16px;
+}
+
+.events-panel .event-log {
+  max-height: 340px;
+  padding: 12px 16px 16px;
+}
+
+.event-row {
+  border: 0;
+  border-bottom: 1px solid #f0efeb;
+  border-radius: 0;
+  padding: 10px 0;
+}
+
+.event-row:last-child {
+  border-bottom: 0;
+}
+
+.app-inspector {
+  align-content: start;
+  background: #fbfbfa;
+  border-left: 1px solid #e6e4df;
+  display: grid;
+  gap: 12px;
+  height: 100vh;
+  overflow: auto;
+  padding: 18px 14px 28px;
+  position: sticky;
+  top: 0;
+}
+
+.app-inspector .panel,
+.app-sidebar .panel {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.app-inspector .panel + .panel,
+.app-sidebar .panel + .panel,
+.app-sidebar #lifecycle-strip {
+  border-top: 1px solid #e9e7e1;
+  padding-top: 14px;
+}
+
+.quickstart-list,
+.workspace-summary,
+.trust-list,
+.doctor-list,
+.document-list,
+.database-list,
+.ops-list,
+.pipeline-list {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.quickstart-row,
+.trust-row,
+.doctor-row,
+.ops-row,
+.pipeline-row,
+.doc-row,
+.db-row {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 4px;
+}
+
+.quickstart-row:hover,
+.trust-row:hover,
+.doctor-row:hover,
+.doc-row:hover,
+.db-row:hover {
+  background: #efefed;
+}
+
+.workspace-name {
+  font-size: 15px;
+}
+
+.check-grid {
+  grid-template-columns: 1fr;
+}
+
+.check-grid div,
+.trust-note,
+.trust-callout {
+  background: #f7f7f5;
+  border-color: #e6e4df;
+}
+
+.app-sidebar .lifecycle-strip {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr;
+  padding: 0;
+}
+
+.app-sidebar .lifecycle-step {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  gap: 8px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  min-height: 0;
+  padding: 4px;
+}
+
+.app-sidebar .lifecycle-step::after,
+.app-sidebar .lifecycle-step p,
+.app-sidebar .lifecycle-step small {
+  display: none;
+}
+
+.app-sidebar .lifecycle-step > span {
+  height: 22px;
+  width: 22px;
+}
+
+.app-sidebar .lifecycle-step strong,
+.app-sidebar .lifecycle-step em {
+  font-size: 12px;
+}
+
+details.panel,
+details.canvas-panel {
+  display: block;
+}
+
+details.panel summary,
+details.canvas-panel summary {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  gap: 4px 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  list-style: none;
+  min-height: 42px;
+}
+
+details.panel summary::-webkit-details-marker,
+details.canvas-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+details.panel summary span,
+details.canvas-panel summary span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+details.panel summary strong,
+details.canvas-panel summary strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 680;
+}
+
+details.canvas-panel summary {
+  border-bottom: 1px solid #f0efeb;
+  padding: 13px 16px;
+}
+
+.harness-details-panel .canvas-actions {
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+}
+
+.harness-canvas {
+  background: #fffdfa;
+  min-height: 520px;
+}
+
+.harness-canvas::before,
+.canvas-lines {
+  display: none;
+}
+
+.repo-context {
+  padding: 14px 16px;
+}
+
+.repo-context-main {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.repo-context-item,
+.harness-node,
+.ralph-stage,
+.ralph-evidence section,
+.harness-detail,
+.canvas-board-header > div:first-child,
+.canvas-board-stats article {
+  background: #ffffff;
+  box-shadow: none;
+}
+
+@media (max-width: 1180px) {
+  .notion-app-shell,
+  .workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar,
+  .app-inspector {
+    height: auto;
+    position: static;
+  }
+
+  .app-main-header {
+    top: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-main {
+    padding: 16px 14px 32px;
+  }
+
+  .app-main-header {
+    align-items: flex-start;
+    flex-direction: column;
+    margin: -16px -14px 14px;
+    padding: 14px;
+  }
+
+  .status-strip,
+  .launch-strip,
+  .repo-context-main {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+}

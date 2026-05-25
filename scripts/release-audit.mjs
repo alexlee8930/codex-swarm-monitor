@@ -21,6 +21,7 @@ assert.match(packageJson.scripts.verify, /codex-only:smoke/, "release verificati
 assert.match(packageJson.scripts.verify, /codex-plugin:smoke/, "release verification must include real Codex plugin install smoke when Codex is available");
 assert.match(packageJson.scripts.verify, /realtime:smoke/, "release verification must include realtime SSE/UI smoke");
 assert.match(packageJson.scripts.verify, /release:sync-source:smoke/, "release verification must include release source sync smoke");
+assert.match(packageJson.scripts.verify, /desktop:smoke/, "release verification must include the desktop app wrapper smoke");
 assert.match(packageJson.scripts["release:verify"], /marketplace:submission:smoke/, "release verification must include marketplace submission smoke");
 assert.match(packageJson.scripts["release:verify"], /standalone:build:all/, "release verification must build all platform standalone assets");
 assert.match(packageJson.scripts["release:verify"], /release:artifacts -- dist/, "release verification must check the full release asset set");
@@ -34,9 +35,13 @@ assert.equal(packageJson.scripts["codex-plugin:smoke"], "node scripts/codex-plug
 assert.equal(packageJson.scripts["release:sync-source"], "node scripts/sync-plugin-release-source.mjs");
 assert.equal(packageJson.scripts["release:sync-source:smoke"], "node scripts/sync-release-source-smoke.mjs");
 assert.equal(packageJson.scripts["standalone:build:all"], "node scripts/build-release-artifacts.mjs");
+assert.equal(packageJson.scripts["desktop:app"], "node scripts/build-desktop-app.mjs");
+assert.equal(packageJson.scripts["desktop:smoke"], "node scripts/desktop-app-smoke.mjs");
 assert.match(packageJson.scripts.lint, /avatar-smoke\.mjs/);
 assert.match(packageJson.scripts.lint, /realtime-smoke\.mjs/);
 assert.match(packageJson.scripts.lint, /refresh-marketplace-screenshot\.mjs/);
+assert.match(packageJson.scripts.lint, /build-desktop-app\.mjs/);
+assert.match(packageJson.scripts.lint, /desktop-app-smoke\.mjs/);
 assert.match(packageJson.scripts.lint, /build-release-artifacts\.mjs/);
 assert.match(packageJson.scripts.lint, /build-marketplace-submission\.mjs/);
 assert.match(packageJson.scripts.lint, /codex-plugin-install-smoke\.mjs/);
@@ -58,9 +63,17 @@ assert.match(standaloneBuilder, /install\.sh/, "standalone bundle must include a
 assert.match(standaloneBuilder, /install\.ps1/, "standalone bundle must include a Windows installer");
 assert.match(standaloneBuilder, /lib\/codex-swarm-monitor/, "installer must copy runtime into a stable install root");
 assert.match(standaloneBuilder, /sha256/, "standalone archives must get checksums");
+const desktopBuilder = read("scripts/build-desktop-app.mjs");
+assert.match(desktopBuilder, /Codex Swarm Monitor\.app/, "desktop builder must create a macOS app bundle");
+assert.match(desktopBuilder, /desktop-manifest\.json/, "desktop app bundle must include desktop build metadata");
+assert.match(desktopBuilder, /--workspace "\$HOME" --open/, "desktop app must open the monitor without auto-installing hooks into home");
+assert.match(desktopBuilder, /\.app\.tar\.gz/, "desktop app builder must archive app bundles");
+assert.match(desktopBuilder, /--build-standalone/, "desktop app builder must make standalone rebuilding explicit");
+assert.match(read("scripts/desktop-app-smoke.mjs"), /--version", "--json"/, "desktop smoke must execute the app launcher on native macOS");
 const releaseArtifactBuilder = read("scripts/build-release-artifacts.mjs");
 assert.match(releaseArtifactBuilder, /nodejs\.org\/dist\/\$\{nodeVersion\}/);
 assert.match(releaseArtifactBuilder, /verifyChecksum/);
+assert.match(releaseArtifactBuilder, /build-desktop-app\.mjs/, "all-platform release builder must emit macOS app wrappers");
 for (const target of ["linux-x64", "darwin-arm64", "darwin-x64", "win32-x64"]) {
   assert.match(releaseArtifactBuilder, new RegExp(target));
 }
@@ -91,6 +104,7 @@ for (const artifact of [
   assert.match(workflow, new RegExp(artifact));
 }
 assert.match(workflow, /npm run verify/);
+assert.match(workflow, /desktop-app-smoke\.mjs --target \$\{\{ matrix\.artifact \}\} --no-build-standalone/, "release workflow must not overwrite signed standalone archives while building app wrappers");
 assert.match(workflow, /npm run release:sync-source/);
 assert.ok(
   workflow.indexOf("Sync Codex plugin release source") < workflow.indexOf("Build Codex plugin package"),
@@ -106,7 +120,7 @@ assert.doesNotMatch(workflow, /find release-artifacts -type f -maxdepth 3/);
 assert.match(workflow, /id-token: write/);
 assert.match(workflow, /attestations: write/);
 assert.match(workflow, /actions\/attest@v4/);
-assert.match(workflow, /subject-path:\s*\|[\s\S]*\.tar\.gz[\s\S]*\.tar\.gz\.sha256/);
+assert.match(workflow, /subject-path: dist\/\$\{\{ matrix\.artifact \}\}\*/, "release attestation must cover standalone and app wrapper artifacts");
 assert.match(workflow, /MACOS_CERTIFICATE_P12_BASE64/);
 assert.match(workflow, /codesign --force --options runtime --timestamp/);
 assert.match(workflow, /xcrun notarytool submit/);
@@ -124,6 +138,7 @@ assert.match(readme, /docs\/release\.md/);
 assert.match(readme, /docs\/privacy\.md/);
 assert.match(readme, /MARKETPLACE\.md/);
 assert.match(readme, /Primary Codex plugin path/);
+assert.match(readme, /macOS app path/);
 assert.match(readme, /Developer marketplace test path from a local plugin checkout/);
 assert.ok(
   readme.indexOf("Primary Codex plugin path") < readme.indexOf("Fallback direct standalone path"),
@@ -189,6 +204,9 @@ assert.match(read("apps/ui/index.html"), /launch-command/);
 assert.match(read("apps/ui/index.html"), /repo-command-strip/);
 assert.match(read("apps/ui/index.html"), /production-workspace-layout/);
 assert.match(read("apps/ui/index.html"), /canvas-proof-strip/);
+assert.match(read("apps/ui/index.html"), /notion-app-shell/);
+assert.match(read("apps/ui/index.html"), /app-sidebar/);
+assert.match(read("apps/ui/index.html"), /app-inspector/);
 assert.match(read("apps/ui/index.html"), /Local Notion-style avatars/);
 assert.match(read("apps/ui/app.js"), /fetchJson\("\/version"\)/);
 assert.match(read("apps/ui/app.js"), /renderOperations/);
@@ -229,6 +247,10 @@ assert.match(uiCss, /--canvas-warm: #fbfaf7/);
 assert.match(uiCss, /max-width: 1920px/);
 assert.match(uiCss, /\.canvas-proof-strip/);
 assert.match(uiCss, /display: flex/);
+assert.match(uiCss, /\.notion-app-shell/);
+assert.match(uiCss, /\.app-sidebar/);
+assert.match(uiCss, /\.app-inspector/);
+assert.match(uiCss, /background: #f7f7f5/);
 assert.match(uiCss, /--notebook: #fffdfa/);
 assert.match(uiCss, /\.copy-icon::before/);
 assert.match(uiCss, /\.sr-only/);
