@@ -60,7 +60,7 @@ try {
     await stopChild(boot.child);
   }
 } finally {
-  rmSync(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
+  removeTemp(temp);
 }
 
 function startStandalone(launcher, workspace) {
@@ -118,6 +118,15 @@ function stopChild(child) {
     });
     child.kill("SIGTERM");
   });
+}
+
+function removeTemp(path) {
+  try {
+    rmSync(path, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
+  } catch (error) {
+    if (process.platform !== "win32") throw error;
+    console.warn(`warning: unable to remove temporary standalone smoke folder: ${error.message}`);
+  }
 }
 
 function runLauncherSync(launcher, args) {
