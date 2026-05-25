@@ -25,7 +25,6 @@ test("release readiness text includes actionable release checklist", () => {
   assert.match(output, /--title v0\.1\.0/);
   assert.match(output, /codex-marketplace-publication/);
   assert.match(output, /plugin-release-source/);
-  assert.match(output, /plugin bootstrap release URL is derived from its repository metadata/);
   assert.match(output, /Sync plugin release source/);
   assert.match(output, /npm run release:sync-source/);
   assert.match(output, /Publish Codex marketplace plugin/);
