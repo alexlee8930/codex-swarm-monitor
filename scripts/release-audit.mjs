@@ -84,7 +84,8 @@ assert.ok(
   "release workflow must sync plugin release source before packaging the Codex plugin"
 );
 assert.match(workflow, /gh release create/);
-assert.match(workflow, /find release-artifacts dist -maxdepth 3 -type f/);
+assert.match(workflow, /find release-artifacts -maxdepth 3 -type f/);
+assert.match(workflow, /find dist -maxdepth 1 -type f/);
 assert.doesNotMatch(workflow, /README-STANDALONE\.md[\s\S]*gh release create/);
 assert.doesNotMatch(workflow, /find release-artifacts -type f -maxdepth 3/);
 assert.match(workflow, /id-token: write/);
@@ -462,6 +463,7 @@ assert.match(workflow, /Generate plugin package provenance attestation/);
 assert.match(workflow, /mapfile -t release_assets/);
 assert.match(workflow, /-name '\*\.tar\.gz'/);
 assert.match(workflow, /-name '\*\.tar\.gz\.sha256'/);
+assert.doesNotMatch(workflow, /find dist -maxdepth 2/);
 assert.match(workflow, /dist\/codex-swarm-monitor-plugin-\*\.tar\.gz\.sha256/);
 assert.match(workflow, /codex-swarm-monitor-plugin-\*\.tar\.gz/);
 assert.match(workflow, /codex-swarm-monitor-marketplace-submission-\*\.tar\.gz/);
