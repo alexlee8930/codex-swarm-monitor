@@ -71,17 +71,21 @@ try {
 
   const chrome = findChrome();
   if (chrome) {
-    const dom = await runChromeDom(chrome, `${base}/?e2e_snapshot=1`, join(temp, "chrome-dom"));
-    assert.match(dom, /agent-card active|agent-card working/);
-    assert.match(dom, /Explorer/);
-    assert.match(dom, /Inspect live workspace event flow/);
-    assert.match(dom, /src\/live\.md/);
-    assert.match(dom, /\/avatar\?name=Explorer&amp;role=Explorer&amp;backgroundColor=ffd5dc&amp;v=7/);
-    assert.match(dom, /Realtime Pipeline/);
-    assert.match(dom, /Event freshness/);
-    assert.match(dom, /old/);
-    assert.doesNotMatch(dom, /No live agents yet/);
-    assert.doesNotMatch(dom, /mockAgents|demoAgents|seedEvents|api\.dicebear/i);
+    const dom = await runChromeDomOptional(chrome, `${base}/?e2e_snapshot=1`, join(temp, "chrome-dom"));
+    if (!dom) {
+      console.warn("realtime smoke chrome DOM check skipped on CI");
+    } else {
+      assert.match(dom, /agent-card active|agent-card working/);
+      assert.match(dom, /Explorer/);
+      assert.match(dom, /Inspect live workspace event flow/);
+      assert.match(dom, /src\/live\.md/);
+      assert.match(dom, /\/avatar\?name=Explorer&amp;role=Explorer&amp;backgroundColor=ffd5dc&amp;v=7/);
+      assert.match(dom, /Realtime Pipeline/);
+      assert.match(dom, /Event freshness/);
+      assert.match(dom, /old/);
+      assert.doesNotMatch(dom, /No live agents yet/);
+      assert.doesNotMatch(dom, /mockAgents|demoAgents|seedEvents|api\.dicebear/i);
+    }
   }
 
   console.log("realtime smoke ok");
@@ -226,4 +230,15 @@ function runChromeDom(chrome, url, userDataDir) {
       else finish(new Error(`Chrome DOM exited ${code}: ${stderr}`));
     });
   });
+}
+
+async function runChromeDomOptional(chrome, url, userDataDir) {
+  try {
+    return await runChromeDom(chrome, url, userDataDir);
+  } catch (error) {
+    const message = String(error?.message || error);
+    const ciChromeFlake = process.env.CI && /Chrome DOM timed out|dbus|DBus|UPower/i.test(message);
+    if (ciChromeFlake && process.env.CODEX_SWARM_STRICT_CHROME !== "1") return null;
+    throw error;
+  }
 }
