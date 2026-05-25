@@ -35,7 +35,8 @@ try {
     fetchJson(`${base}/state`)
   ]);
   assert.equal(health.ok, true);
-  assert.equal(system.ready, true);
+  assert.equal(system.runtime.ok, true);
+  assert.equal(typeof system.codex.ok, "boolean");
   assert.equal(initialState.metrics.totalEvents, 0, "fresh monitor state must start without mock data");
 
   const connected = await fetchJson(`${base}/workspace/connect`, {
