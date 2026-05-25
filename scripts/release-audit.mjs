@@ -22,9 +22,9 @@ assert.match(packageJson.scripts.verify, /codex-plugin:smoke/, "release verifica
 assert.match(packageJson.scripts.verify, /realtime:smoke/, "release verification must include realtime SSE/UI smoke");
 assert.match(packageJson.scripts.verify, /release:sync-source:smoke/, "release verification must include release source sync smoke");
 assert.match(packageJson.scripts.verify, /desktop:smoke/, "release verification must include the desktop app wrapper smoke");
-assert.match(packageJson.scripts["release:verify"], /marketplace:submission:smoke/, "release verification must include marketplace submission smoke");
+assert.doesNotMatch(packageJson.scripts["release:verify"], /marketplace:submission:smoke/, "app release verification must not depend on marketplace submission");
 assert.match(packageJson.scripts["release:verify"], /standalone:build:all/, "release verification must build all platform standalone assets");
-assert.match(packageJson.scripts["release:verify"], /release:artifacts -- dist/, "release verification must check the full release asset set");
+assert.match(packageJson.scripts["release:verify"], /release:artifacts -- dist/, "release verification must check the app release asset set");
 assert.equal(packageJson.scripts["release:remote-smoke"], "node scripts/remote-release-bootstrap-smoke.mjs");
 assert.equal(packageJson.scripts["release:desktop-remote-smoke"], "node scripts/remote-desktop-app-smoke.mjs");
 assert.equal(packageJson.scripts["avatar:smoke"], "node scripts/avatar-smoke.mjs");
@@ -168,6 +168,7 @@ assert.match(readme, /codex-swarm-monitor --version/);
 assert.match(readme, /--connect --open/);
 assert.match(readme, /GET \/version/);
 assert.match(readme, /mock data is disabled/);
+assert.match(readme, /primary end-user path is the macOS app or standalone bundle/);
 assert.match(readme, /macOS signing and notarization/);
 assert.match(readme, /Windows Authenticode signing/);
 assert.match(readme, /npm run release:readiness/);
@@ -414,12 +415,12 @@ assert.match(readiness, /git-remote/);
 assert.match(readiness, /standalone-archives/);
 assert.match(readiness, /All platform standalone archives built/);
 assert.match(readiness, /plugin-package/);
-assert.match(readiness, /Codex plugin release package built/);
+assert.match(readiness, /Optional Codex plugin release package built/);
 assert.match(readiness, /plugin-release-source/);
 assert.match(readiness, /pluginUrlsMatchRepo/);
 assert.match(readiness, /sync-plugin-release-source/);
 assert.match(readiness, /marketplace-submission/);
-assert.match(readiness, /Codex marketplace submission bundle built/);
+assert.match(readiness, /Optional Codex marketplace submission bundle built/);
 assert.match(readiness, /codex-marketplace-publication/);
 assert.match(readiness, /Optional Codex plugin marketplace publication/);
 assert.match(readiness, /publish-codex-marketplace/);
@@ -505,6 +506,7 @@ assert.match(marketplaceNotes, /No Node\/npm\/source checkout/);
 assert.doesNotMatch(marketplaceNotes, /swarm-ui-mockup|seed dashboard|DiceBear/i);
 assert.match(read("scripts/verify-release-artifacts.mjs"), /inputDirs/);
 assert.match(read("scripts/verify-release-artifacts.mjs"), /release artifact set is incomplete/);
+assert.match(read("scripts/verify-release-artifacts.mjs"), /includeOptionalPlugin/);
 assert.match(workflow, /Verify complete release artifact set/);
 assert.match(workflow, /verify-release-artifacts\.mjs release-artifacts --standalone-only/);
 assert.match(workflow, /Verify complete release asset set/);
@@ -553,12 +555,17 @@ const setup = read("docs/setup.md");
 assert.match(setup, /End users should not need Node, npm, OMX, Bun/);
 assert.match(setup, /release publication issue/);
 assert.match(setup, /0` agents and `0` events/);
-assert.match(setup, /Primary Codex plugin path/);
+assert.match(setup, /Primary macOS app path/);
 assert.match(setup, /Fallback direct standalone path/);
+assert.match(setup, /Optional Codex plugin path/);
 assert.match(setup, /Developer-only local source workflow/);
 assert.ok(
-  setup.indexOf("Primary Codex plugin path") < setup.indexOf("Fallback direct standalone path"),
-  "setup docs must present the Codex plugin before the standalone fallback"
+  setup.indexOf("Primary macOS app path") < setup.indexOf("Fallback direct standalone path"),
+  "setup docs must present the macOS app before the standalone fallback"
+);
+assert.ok(
+  setup.indexOf("Fallback direct standalone path") < setup.indexOf("Optional Codex plugin path"),
+  "setup docs must keep the Codex plugin path optional and below app/standalone paths"
 );
 assert.ok(
   setup.indexOf("Developer-only local source workflow") < setup.indexOf("For npm package verification only"),

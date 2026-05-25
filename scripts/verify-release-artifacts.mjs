@@ -7,6 +7,7 @@ import { basename, join, resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
 const standaloneOnly = args.includes("--standalone-only");
+const includeOptionalPlugin = args.includes("--include-optional-plugin");
 const inputArgs = args.filter((arg) => !arg.startsWith("--"));
 const inputDirs = (inputArgs.length ? inputArgs : [join(root, "dist")]).map((arg) => resolve(arg));
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
@@ -31,7 +32,7 @@ const requiredMarketplaceSubmissionFiles = [
 const requiredFiles = [
   ...requiredArchives.flatMap((name) => [name, `${name}.sha256`]),
   ...requiredDesktopAppArchives.flatMap((name) => [name, `${name}.sha256`]),
-  ...(standaloneOnly ? [] : [...requiredPluginFiles, ...requiredMarketplaceSubmissionFiles])
+  ...(!standaloneOnly && includeOptionalPlugin ? [...requiredPluginFiles, ...requiredMarketplaceSubmissionFiles] : [])
 ];
 const available = new Set(inputDirs.flatMap((dir) => listFiles(dir)).map((path) => basename(path)));
 const missing = requiredFiles.filter((name) => !available.has(name));
@@ -52,7 +53,7 @@ for (const archiveName of requiredDesktopAppArchives) {
   assert.match(readFileSync(checksumPath, "utf8"), new RegExp(`^[a-f0-9]{64}  ${escapeRegex(archiveName)}\\r?\\n?$`));
 }
 
-if (!standaloneOnly) {
+if (!standaloneOnly && includeOptionalPlugin) {
   for (const artifactName of [...requiredPluginFiles, ...requiredMarketplaceSubmissionFiles]) {
     const artifactPath = findFile(inputDirs, artifactName);
     assert.ok(statSync(artifactPath).size > 64, `${artifactName} should not be empty`);
@@ -65,7 +66,8 @@ if (!standaloneOnly) {
   assert.match(submissionChecksum, new RegExp(`^[a-f0-9]{64}  ${escapeRegex(submissionArchive)}\\r?\\n?$`));
 }
 
-console.log(`${standaloneOnly ? "standalone release artifact set" : "release artifact set"} ok: ${requiredFiles.length} files in ${inputDirs.join(", ")}`);
+const label = standaloneOnly ? "standalone release artifact set" : includeOptionalPlugin ? "full release artifact set" : "app release artifact set";
+console.log(`${label} ok: ${requiredFiles.length} files in ${inputDirs.join(", ")}`);
 
 function listFiles(dir) {
   if (!existsSync(dir)) return [];

@@ -9,7 +9,7 @@ import test from "node:test";
 
 const root = resolve(import.meta.dirname, "..");
 
-test("release artifact verifier separates standalone-only and full release checks", async () => {
+test("release artifact verifier separates app and optional plugin release checks", async () => {
   const dir = mkdtempSync(join(tmpdir(), "swarm-release-verify-"));
   const standaloneDir = join(dir, "release-artifacts");
   const pluginDir = join(dir, "dist");
@@ -34,17 +34,25 @@ test("release artifact verifier separates standalone-only and full release check
       /standalone release artifact set ok/
     );
 
-    assertVerifierFails(["scripts/verify-release-artifacts.mjs", standaloneDir], /codex-swarm-monitor-plugin-0\.1\.0\.tar\.gz/);
-
-    await writeArtifactPair(pluginDir, "codex-swarm-monitor-plugin-0.1.0.tar.gz", 128);
-    assertVerifierFails(["scripts/verify-release-artifacts.mjs", standaloneDir, pluginDir], /codex-swarm-monitor-marketplace-submission-0\.1\.0\.tar\.gz/);
-    await writeArtifactPair(pluginDir, "codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz", 128);
     assert.match(
-      execFileSync(process.execPath, ["scripts/verify-release-artifacts.mjs", standaloneDir, pluginDir], {
+      execFileSync(process.execPath, ["scripts/verify-release-artifacts.mjs", standaloneDir], {
         cwd: root,
         encoding: "utf8"
       }),
-      /release artifact set ok: 16 files/
+      /app release artifact set ok: 12 files/
+    );
+
+    assertVerifierFails(["scripts/verify-release-artifacts.mjs", standaloneDir, "--include-optional-plugin"], /codex-swarm-monitor-plugin-0\.1\.0\.tar\.gz/);
+
+    await writeArtifactPair(pluginDir, "codex-swarm-monitor-plugin-0.1.0.tar.gz", 128);
+    assertVerifierFails(["scripts/verify-release-artifacts.mjs", standaloneDir, pluginDir, "--include-optional-plugin"], /codex-swarm-monitor-marketplace-submission-0\.1\.0\.tar\.gz/);
+    await writeArtifactPair(pluginDir, "codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz", 128);
+    assert.match(
+      execFileSync(process.execPath, ["scripts/verify-release-artifacts.mjs", standaloneDir, pluginDir, "--include-optional-plugin"], {
+        cwd: root,
+        encoding: "utf8"
+      }),
+      /full release artifact set ok: 16 files/
     );
   } finally {
     rmSync(dir, { recursive: true, force: true });

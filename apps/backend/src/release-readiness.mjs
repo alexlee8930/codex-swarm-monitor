@@ -22,11 +22,11 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
   ];
   const requiredChecksums = requiredArchives.map((name) => `${name}.sha256`);
   const requiredDesktopAppChecksums = requiredDesktopApps.map((name) => `${name}.sha256`);
-  const requiredPluginArtifacts = [
+  const optionalPluginArtifacts = [
     `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz`,
     `codex-swarm-monitor-plugin-${packageJson.version}.tar.gz.sha256`
   ];
-  const requiredMarketplaceSubmission = [
+  const optionalMarketplaceSubmission = [
     `codex-swarm-monitor-marketplace-submission-${packageJson.version}.tar.gz`,
     `codex-swarm-monitor-marketplace-submission-${packageJson.version}.tar.gz.sha256`
   ];
@@ -34,9 +34,7 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
     ...requiredArchives,
     ...requiredChecksums,
     ...requiredDesktopApps,
-    ...requiredDesktopAppChecksums,
-    ...requiredPluginArtifacts,
-    ...requiredMarketplaceSubmission
+    ...requiredDesktopAppChecksums
   ];
   const originRemote = git(packageRoot, ["remote", "get-url", "origin"]);
   const pluginManifest = readPluginManifest(packageRoot);
@@ -67,19 +65,24 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
     checkArtifacts(packageRoot, "desktop-app-checksums", "macOS app wrapper checksums built", requiredDesktopAppChecksums, {
       remediation: "Generate and publish matching .sha256 files for every macOS .app archive."
     }),
-    checkArtifacts(packageRoot, "plugin-package", "Codex plugin release package built", requiredPluginArtifacts, {
-      remediation: "Run npm run plugin:package before creating the GitHub release."
+    checkArtifacts(packageRoot, "plugin-package", "Optional Codex plugin release package built", optionalPluginArtifacts, {
+      optional: true,
+      remediation: "Optional distribution path only. Run npm run plugin:package before publishing a Codex plugin package."
     }),
-    checkArtifacts(packageRoot, "marketplace-submission", "Codex marketplace submission bundle built", requiredMarketplaceSubmission, {
-      remediation: "Run npm run marketplace:submission before submitting the Codex plugin to the marketplace."
+    checkArtifacts(packageRoot, "marketplace-submission", "Optional Codex marketplace submission bundle built", optionalMarketplaceSubmission, {
+      optional: true,
+      remediation: "Optional distribution path only. Run npm run marketplace:submission before submitting the Codex plugin to a marketplace."
     }),
     check("marketplace-local", "Local Codex marketplace manifest present", existsSync(join(packageRoot, ".agents/plugins/marketplace.json")), {
+      optional: true,
       remediation: "Restore .agents/plugins/marketplace.json so Codex can discover the plugin locally."
     }),
     check("plugin-manifest", "Codex plugin manifest present", existsSync(join(packageRoot, "plugins/codex-swarm-monitor/.codex-plugin/plugin.json")), {
+      optional: true,
       remediation: "Restore plugins/codex-swarm-monitor/.codex-plugin/plugin.json before packaging the plugin."
     }),
-    check("plugin-release-source", "Codex plugin release source matches Git origin", pluginReleaseSourceOk, {
+    check("plugin-release-source", "Optional Codex plugin release source matches Git origin", pluginReleaseSourceOk, {
+      optional: true,
       remediation: originRepo
         ? `Set plugins/codex-swarm-monitor/.codex-plugin/plugin.json repository/homepage/website URLs to https://github.com/${originRepo} before packaging.`
         : "Configure the public GitHub origin first; the plugin bootstrap release URL is derived from its repository metadata."
@@ -202,14 +205,14 @@ function releasePlan({ checks, version, tag }) {
       command: "npm run release:sync-source",
       state: ok("plugin-release-source") ? "done" : ok("git-remote") ? "ready" : "blocked",
       detail: ok("plugin-release-source")
-        ? "Plugin bootstrap URLs match the GitHub origin."
-        : "Updates plugin manifest release URLs so Codex marketplace installs download from the public GitHub release."
+        ? "Optional plugin bootstrap URLs match the GitHub origin."
+        : "Optional plugin metadata can be synced when packaging a Codex plugin distribution."
     },
     {
       id: "create-tag",
       label: `Create ${tag} tag`,
       command: `git tag ${tag} && git push origin HEAD ${tag}`,
-      state: ok("version-tag") ? "done" : ok("git-remote") && ok("plugin-release-source") ? "ready" : "blocked",
+      state: ok("version-tag") ? "done" : ok("git-remote") ? "ready" : "blocked",
       detail: ok("version-tag") ? "Version tag is already on HEAD." : "The release workflow publishes artifacts from this tag."
     },
     {
@@ -221,17 +224,17 @@ function releasePlan({ checks, version, tag }) {
     },
     {
       id: "package-plugin",
-      label: "Build Codex plugin package",
+      label: "Optional Codex plugin package",
       command: "npm run plugin:package",
       state: ok("plugin-package") ? "done" : "ready",
-      detail: `Creates codex-swarm-monitor-plugin-${version}.tar.gz and checksum.`
+      detail: `Optional path. Creates codex-swarm-monitor-plugin-${version}.tar.gz and checksum.`
     },
     {
       id: "package-marketplace-submission",
-      label: "Build Codex marketplace submission",
+      label: "Optional Codex marketplace submission",
       command: "npm run marketplace:submission",
-      state: ok("marketplace-submission") ? "done" : ok("plugin-package") ? "ready" : "blocked",
-      detail: `Creates codex-swarm-monitor-marketplace-submission-${version}.tar.gz with listing notes, screenshot, plugin archive, and asset manifest.`
+      state: ok("marketplace-submission") ? "done" : "ready",
+      detail: `Optional path. Creates codex-swarm-monitor-marketplace-submission-${version}.tar.gz with listing notes, screenshot, plugin archive, and asset manifest.`
     },
     {
       id: "verify-release-assets",
@@ -244,14 +247,14 @@ function releasePlan({ checks, version, tag }) {
       id: "publish-github-release",
       label: "Publish GitHub release",
       command: releaseCreateCommand(tag),
-      state: ok("standalone-archives") && ok("standalone-checksums") && ok("desktop-apps") && ok("desktop-app-checksums") && ok("plugin-package") && ok("plugin-release-source") ? "ready" : "blocked",
-      detail: "Uploads standalone bundles, macOS app wrappers, checksums, and the Codex plugin package."
+      state: ok("standalone-archives") && ok("standalone-checksums") && ok("desktop-apps") && ok("desktop-app-checksums") ? "ready" : "blocked",
+      detail: "Uploads standalone bundles, macOS app wrappers, and checksums. Optional Codex plugin artifacts may be uploaded when built."
     },
     {
       id: "publish-codex-marketplace",
       label: "Optional Codex marketplace plugin",
       command: "codex plugin add codex-swarm-monitor@codex-swarm-monitor",
-      state: ok("codex-marketplace-publication") ? "done" : ok("marketplace-submission") ? "ready" : "blocked",
+      state: ok("codex-marketplace-publication") ? "done" : "ready",
       detail: ok("codex-marketplace-publication")
         ? "Codex marketplace publication has been externally verified."
         : "Optional path. The primary public distribution is the released app bundle and standalone archives."
@@ -291,7 +294,7 @@ function checkPublishedReleaseAssets(packageRoot, tag, filenames, options = {}) 
       Boolean(raw) && missing.length === 0,
       {
         optional: true,
-        remediation: "Upload every standalone archive, checksum, plugin package, and plugin checksum to the GitHub release."
+        remediation: "Upload every app archive, standalone archive, and matching checksum to the GitHub release. Optional plugin artifacts can be uploaded when that distribution path is used."
       }
     ),
     missing

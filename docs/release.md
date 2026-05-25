@@ -7,7 +7,6 @@ This runbook is the release path for the app-first "Codex only" user promise. A 
 Run the full local gate before publishing:
 
 ```bash
-npm run screenshot:marketplace
 npm run verify
 npm run release:verify
 npm run release:audit
@@ -72,7 +71,7 @@ Or download GitHub Actions artifacts after the release workflow runs:
 gh run download --dir dist
 ```
 
-Build the optional Codex plugin package and marketplace submission:
+Build the optional Codex plugin package and marketplace submission only if you want that secondary distribution path:
 
 ```bash
 npm run screenshot:marketplace
@@ -80,7 +79,7 @@ npm run plugin:package
 npm run marketplace:submission
 ```
 
-Verify the complete release asset set:
+Verify the app and standalone release asset set:
 
 ```bash
 npm run release:artifacts -- dist
@@ -93,7 +92,7 @@ The release must include the app and standalone artifacts:
 - both macOS `.app` wrapper archives
 - both macOS `.app` wrapper `.sha256` checksum files
 
-The release also includes optional Codex plugin review artifacts:
+When built, the release can also include optional Codex plugin review artifacts:
 
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz`
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz.sha256`

@@ -30,6 +30,8 @@ test("release readiness text includes actionable release checklist", () => {
   assert.match(output, /Sync plugin release source/);
   assert.match(output, /npm run release:sync-source/);
   assert.match(output, /Optional Codex marketplace plugin/);
+  assert.match(output, /Optional Codex plugin package/);
+  assert.match(output, /Optional Codex marketplace submission/);
   assert.match(output, /codex plugin add codex-swarm-monitor@codex-swarm-monitor/);
   assert.doesNotMatch(output, /gh release create v0\.1\.0 dist\/\*/);
 });
@@ -67,7 +69,9 @@ test("release readiness recognizes nested GitHub artifact downloads", async () =
     assert.equal(summary.checks.find((item) => item.id === "desktop-apps").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "desktop-app-checksums").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "plugin-package").ok, true);
+    assert.equal(summary.checks.find((item) => item.id === "plugin-package").optional, true);
     assert.equal(summary.checks.find((item) => item.id === "marketplace-submission").ok, true);
+    assert.equal(summary.checks.find((item) => item.id === "marketplace-submission").optional, true);
     assert.equal(summary.checks.find((item) => item.id === "codex-marketplace-publication").ok, false);
     assert.equal(summary.checks.find((item) => item.id === "codex-marketplace-publication").optional, true);
     assert.equal(summary.plan.find((item) => item.id === "collect-artifacts").state, "done");
@@ -104,6 +108,7 @@ test("release readiness requires plugin release source to match git origin", asy
     await mkdir(join(dir, ".git"), { recursive: true });
     const summary = releaseReadiness(dir, { inspectPublished: false });
     assert.equal(summary.checks.find((item) => item.id === "plugin-release-source").ok, false);
+    assert.equal(summary.checks.find((item) => item.id === "plugin-release-source").optional, true);
     assert.match(summary.checks.find((item) => item.id === "plugin-release-source").remediation, /Configure the public GitHub origin first/);
   } finally {
     rmSync(dir, { recursive: true, force: true });

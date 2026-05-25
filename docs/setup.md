@@ -8,13 +8,31 @@ Only Codex is required in the target workspace. End users should not need Node, 
 codex login
 ```
 
-Primary Codex plugin path after the plugin is available in a Codex marketplace:
+Primary macOS app path after downloading a release app archive:
+
+```bash
+tar -xzf codex-swarm-monitor-darwin-<arch>.app.tar.gz
+open "Codex Swarm Monitor.app"
+```
+
+The app opens the local monitor without installing hooks into `$HOME`. Pick the real Codex workspace in the UI, then install project-local hooks for that folder.
+
+Fallback direct standalone path after downloading a release bundle:
+
+```bash
+tar -xzf codex-swarm-monitor-<platform>-<arch>.tar.gz
+./codex-swarm-monitor-<platform>-<arch>/bin/codex-swarm-monitor --workspace /path/to/target-project --connect --open
+```
+
+The standalone bundle includes its own Node runtime. Users do not install Node or npm.
+
+Optional Codex plugin path if a Codex plugin package or marketplace entry is published later:
 
 ```bash
 codex plugin add codex-swarm-monitor@codex-swarm-monitor
 ```
 
-After installing the plugin, ask Codex:
+After installing the optional plugin, ask Codex:
 
 ```text
 Start the Codex Swarm Monitor for this workspace.
@@ -33,7 +51,7 @@ curl -fsS "$MONITOR_URL/state?path=$PWD"
 
 Expect `0` agents and `0` events until Codex runs in that workspace and emits native hook events.
 
-Codex plugin path from a local checkout while developing or testing the marketplace entry:
+Developer marketplace test path from a local plugin checkout:
 
 ```bash
 codex plugin marketplace add /path/to/codex-swarm-monitor
@@ -43,15 +61,6 @@ codex plugin add codex-swarm-monitor@codex-swarm-monitor
 Then use the same prompt above. The plugin skill bootstraps the standalone runtime when `codex-swarm-monitor` is not already on `PATH`.
 
 The plugin bootstrap installer is version-pinned by default. It derives the GitHub release URL from the plugin manifest repository, downloads from the matching release tag `v0.1.0`, and verifies the `.sha256` before installing; use `CODEX_SWARM_RELEASE_VERSION` or `CODEX_SWARM_RELEASE_BASE` only for release testing.
-
-Fallback direct standalone path after downloading a release bundle:
-
-```bash
-tar -xzf codex-swarm-monitor-<platform>-<arch>.tar.gz
-./codex-swarm-monitor-<platform>-<arch>/bin/codex-swarm-monitor --workspace /path/to/target-project --connect --open
-```
-
-The standalone bundle includes its own Node runtime. Users do not install Node or npm.
 
 Release workflow targets:
 
