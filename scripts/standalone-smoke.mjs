@@ -57,10 +57,10 @@ try {
     assert.equal(existsSync(join(workspace, ".codex/codex-swarm-monitor/hook.mjs")), true);
     assert.doesNotMatch(readFileSync(join(workspace, ".codex/codex-swarm-monitor/hook.mjs"), "utf8"), new RegExp(escapeRegex(root)));
   } finally {
-    boot.child.kill("SIGTERM");
+    await stopChild(boot.child);
   }
 } finally {
-  rmSync(temp, { recursive: true, force: true });
+  rmSync(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
 }
 
 function startStandalone(launcher, workspace) {
@@ -103,6 +103,21 @@ function startStandalone(launcher, workspace) {
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function stopChild(child) {
+  return new Promise((resolveStop) => {
+    if (!child || child.killed) {
+      resolveStop();
+      return;
+    }
+    const timer = setTimeout(resolveStop, 1200);
+    child.once("close", () => {
+      clearTimeout(timer);
+      resolveStop();
+    });
+    child.kill("SIGTERM");
+  });
 }
 
 function runLauncherSync(launcher, args) {
