@@ -95,10 +95,18 @@ The release must include:
 
 ## Publish GitHub Release
 
-Create the GitHub release with every archive and checksum:
+Create or update the GitHub release with every archive and checksum. Keep the `find` depth capped so extracted marketplace submission contents are not uploaded as duplicate assets:
 
 ```bash
-gh release create v0.1.0 $(find dist -type f \( -name '*.tar.gz' -o -name '*.sha256' -o -name '*.zip' \) -print) --title v0.1.0
+mapfile -t release_assets < <(
+  find dist -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.sha256' -o -name '*.zip' -o -name '*.zip.sha256' \) -print | sort
+)
+
+if gh release view v0.1.0 >/dev/null 2>&1; then
+  gh release upload v0.1.0 "${release_assets[@]}" --clobber
+else
+  gh release create v0.1.0 "${release_assets[@]}" --title v0.1.0
+fi
 ```
 
 Then inspect the release:
@@ -106,6 +114,7 @@ Then inspect the release:
 ```bash
 npm run release:readiness
 npm run release:readiness -- --remote
+npm run release:remote-smoke
 ```
 
 ## Publish Codex Marketplace Plugin

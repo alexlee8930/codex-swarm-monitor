@@ -11,6 +11,9 @@ permissions:
   id-token: write
   attestations: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-standalone:
     strategy:
@@ -196,7 +199,13 @@ jobs:
             } | sort
           )
           printf '%s\n' "${release_assets[@]}"
-          gh release create "$GITHUB_REF_NAME" \
-            --title "$GITHUB_REF_NAME" \
-            --notes "Codex Swarm Monitor standalone runtime and Codex plugin package release." \
-            "${release_assets[@]}"
+          release_notes="Codex Swarm Monitor standalone runtime and Codex plugin package release."
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "$release_notes"
+            gh release upload "$GITHUB_REF_NAME" "${release_assets[@]}" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes "$release_notes" \
+              "${release_assets[@]}"
+          fi

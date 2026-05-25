@@ -306,7 +306,9 @@ test("server exposes release readiness with actionable remediation", async () =>
     assert.ok(release.plan.some((item) => item.id === "verify-source" && item.command === "npm run verify"));
     assert.ok(release.plan.some((item) => item.id === "collect-artifacts" && item.command === "npm run standalone:build:all"));
     assert.ok(release.plan.some((item) => item.id === "publish-github-release" && item.command.includes("gh release create v0.1.0")));
-    assert.ok(release.plan.some((item) => item.id === "publish-github-release" && item.command.includes("find dist -type f")));
+    assert.ok(release.plan.some((item) => item.id === "publish-github-release" && item.command.includes("find dist -maxdepth 1 -type f")));
+    assert.ok(release.plan.some((item) => item.id === "publish-github-release" && item.command.includes("gh release upload v0.1.0")));
+    assert.ok(release.plan.some((item) => item.id === "publish-github-release" && item.command.includes("--clobber")));
     assert.ok(release.plan.every((item) => !item.command.includes("gh release create v0.1.0 dist/*")));
     assert.ok(release.plan.every((item) => ["blocked", "done", "ready"].includes(item.state)));
     assert.deepEqual(

@@ -241,7 +241,7 @@ function releasePlan({ checks, version, tag }) {
 }
 
 function releaseCreateCommand(tag) {
-  return `gh release create ${tag} $(find dist -type f \\( -name '*.tar.gz' -o -name '*.sha256' -o -name '*.zip' \\) -print) --title ${tag}`;
+  return `gh release create ${tag} $(find dist -maxdepth 1 -type f \\( -name '*.tar.gz' -o -name '*.sha256' -o -name '*.zip' -o -name '*.zip.sha256' \\) -print) --title ${tag} || gh release upload ${tag} $(find dist -maxdepth 1 -type f \\( -name '*.tar.gz' -o -name '*.sha256' -o -name '*.zip' -o -name '*.zip.sha256' \\) -print) --clobber`;
 }
 
 function envPresent(names) {

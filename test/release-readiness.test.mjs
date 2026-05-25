@@ -19,7 +19,9 @@ test("release readiness text includes actionable release checklist", () => {
   assert.match(output, /official Node runtimes/);
   assert.doesNotMatch(output, /--name release-artifacts/);
   assert.match(output, /npm run release:artifacts -- dist/);
-  assert.match(output, /gh release create v0\.1\.0 \$\(find dist -type f/);
+  assert.match(output, /gh release create v0\.1\.0 \$\(find dist -maxdepth 1 -type f/);
+  assert.match(output, /gh release upload v0\.1\.0 \$\(find dist -maxdepth 1 -type f/);
+  assert.match(output, /--clobber/);
   assert.match(output, /-name '\*\.tar\.gz'/);
   assert.match(output, /-name '\*\.sha256'/);
   assert.match(output, /--title v0\.1\.0/);
