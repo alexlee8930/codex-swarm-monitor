@@ -10,9 +10,10 @@ import { pathToFileURL } from "node:url";
 
 const root = resolve(import.meta.dirname, "..");
 const temp = mkdtempSync(join(tmpdir(), "codex-swarm-package-"));
+const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 try {
-  const packOutput = execFileSync("npm", ["pack", "--json"], { cwd: root, encoding: "utf8" });
+  const packOutput = execFileSync(npmCommand, ["pack", "--json"], { cwd: root, encoding: "utf8" });
   const [{ filename }] = JSON.parse(packOutput);
   const tarball = join(root, filename);
   execFileSync("tar", ["-xzf", tarball, "-C", temp], { stdio: "pipe" });
