@@ -50,7 +50,7 @@ try {
           CODEX_SWARM_RELEASE_DIR: join(root, "dist"),
           CODEX_SWARM_TARGET: manifest.target,
           PREFIX: wrapperPrefix,
-          PATH: "C:\\Windows\\System32;C:\\Windows"
+          PATH: "C:\\Windows\\System32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
         },
         encoding: "utf8"
       }),
