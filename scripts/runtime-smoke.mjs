@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
@@ -160,8 +160,8 @@ try {
   }
 }
 } finally {
-  if (child) child.kill("SIGTERM");
-  rmSync(temp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  if (child) await stopChild(child);
+  removeTemp(temp);
 }
 
 function startMonitor(workspace) {
@@ -199,6 +199,41 @@ function startMonitor(workspace) {
       }
     });
   });
+}
+
+function stopChild(child) {
+  return new Promise((resolveStop) => {
+    if (!child || child.killed) {
+      resolveStop();
+      return;
+    }
+    const timer = setTimeout(resolveStop, 1200);
+    child.once("close", () => {
+      clearTimeout(timer);
+      resolveStop();
+    });
+    if (process.platform === "win32" && child.pid) {
+      try {
+        execFileSync("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+      } catch {
+        child.kill("SIGTERM");
+      }
+      return;
+    }
+    child.kill("SIGTERM");
+  });
+}
+
+function removeTemp(path) {
+  try {
+    rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch (error) {
+    if (process.platform === "win32" && error?.code === "EPERM") {
+      console.warn(`warning: could not remove temporary smoke directory ${path}: ${error.message}`);
+      return;
+    }
+    throw error;
+  }
 }
 
 async function fetchJson(url) {

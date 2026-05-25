@@ -62,8 +62,8 @@ try {
   assert.equal(state.files[0].path, "AGENTS.md");
   assert.equal(state.agents[0].id, "main");
 } finally {
-  if (server) server.kill("SIGTERM");
-  rmSync(temp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  if (server) await stopChild(server);
+  removeTemp(temp);
 }
 
 function installBundle(bundleRoot, prefix) {
@@ -124,6 +124,41 @@ function startInstalled(launcher, workspace, dbPath) {
       }
     });
   });
+}
+
+function stopChild(child) {
+  return new Promise((resolveStop) => {
+    if (!child || child.killed) {
+      resolveStop();
+      return;
+    }
+    const timer = setTimeout(resolveStop, 1200);
+    child.once("close", () => {
+      clearTimeout(timer);
+      resolveStop();
+    });
+    if (process.platform === "win32" && child.pid) {
+      try {
+        execFileSync("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+      } catch {
+        child.kill("SIGTERM");
+      }
+      return;
+    }
+    child.kill("SIGTERM");
+  });
+}
+
+function removeTemp(path) {
+  try {
+    rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch (error) {
+    if (process.platform === "win32" && error?.code === "EPERM") {
+      console.warn(`warning: could not remove temporary smoke directory ${path}: ${error.message}`);
+      return;
+    }
+    throw error;
+  }
 }
 
 function readHookCommand(workspace, eventName) {

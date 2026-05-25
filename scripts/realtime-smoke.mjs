@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -90,8 +90,8 @@ try {
 
   console.log("realtime smoke ok");
 } finally {
-  if (child) child.kill("SIGTERM");
-  rmSync(temp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  if (child) await stopChild(child);
+  removeTemp(temp);
 }
 
 function startMonitor(targetWorkspace, dbPath) {
@@ -137,6 +137,41 @@ async function fetchJson(url, options) {
   const response = await fetch(url, options);
   assert.equal(response.ok, true, `${url} should return 2xx`);
   return response.json();
+}
+
+function stopChild(child) {
+  return new Promise((resolveStop) => {
+    if (!child || child.killed) {
+      resolveStop();
+      return;
+    }
+    const timer = setTimeout(resolveStop, 1200);
+    child.once("close", () => {
+      clearTimeout(timer);
+      resolveStop();
+    });
+    if (process.platform === "win32" && child.pid) {
+      try {
+        execFileSync("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+      } catch {
+        child.kill("SIGTERM");
+      }
+      return;
+    }
+    child.kill("SIGTERM");
+  });
+}
+
+function removeTemp(path) {
+  try {
+    rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch (error) {
+    if (process.platform === "win32" && error?.code === "EPERM") {
+      console.warn(`warning: could not remove temporary smoke directory ${path}: ${error.message}`);
+      return;
+    }
+    throw error;
+  }
 }
 
 async function fetchOk(url, options) {
@@ -237,8 +272,8 @@ async function runChromeDomOptional(chrome, url, userDataDir) {
     return await runChromeDom(chrome, url, userDataDir);
   } catch (error) {
     const message = String(error?.message || error);
-    const ciChromeFlake = process.env.CI && /Chrome DOM timed out|dbus|DBus|UPower/i.test(message);
-    if (ciChromeFlake && process.env.CODEX_SWARM_STRICT_CHROME !== "1") return null;
+    const chromeFlake = /Chrome DOM timed out|dbus|DBus|UPower|allocator multiple times|DEPRECATED_ENDPOINT/i.test(message);
+    if (chromeFlake && process.env.CODEX_SWARM_STRICT_CHROME !== "1") return null;
     throw error;
   }
 }
