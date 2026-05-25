@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const temp = mkdtempSync(join(tmpdir(), "codex-swarm-runtime-"));
@@ -40,7 +40,7 @@ try {
   assert.ok(release.checks.every((item) => item.ok || item.remediation));
   assert.ok(release.plan.some((item) => item.id === "verify-source" && item.command === "npm run verify"));
   assert.equal(current.path, root);
-  assert.equal(workspace.name, "codex_dashboard");
+  assert.equal(workspace.name, basename(root));
   assert.equal(workspace.install.configured, true);
   assert.ok(workspace.harness.ralph.successCriteria.length > 0, "workspace analysis must extract Ralph success criteria");
   assert.ok(workspace.harness.ralph.tasks.length > 0, "workspace analysis must extract implementation loop tasks");
