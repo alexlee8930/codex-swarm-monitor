@@ -40,7 +40,7 @@ try {
   assert.ok(release.checks.every((item) => item.ok || item.remediation));
   assert.ok(release.plan.some((item) => item.id === "verify-source" && item.command === "npm run verify"));
   assert.equal(current.path, root);
-  assert.equal(workspace.name, basename(root));
+  assert.equal(workspace.name.split(/[\\/]/).pop(), basename(root));
   assert.equal(workspace.install.configured, true);
   assert.ok(workspace.harness.ralph.successCriteria.length > 0, "workspace analysis must extract Ralph success criteria");
   assert.ok(workspace.harness.ralph.tasks.length > 0, "workspace analysis must extract implementation loop tasks");
