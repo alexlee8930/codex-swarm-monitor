@@ -170,12 +170,16 @@ function readHookCommand(workspace, eventName) {
 
 function runHook(command, cwd, payload) {
   return new Promise((resolveRun, rejectRun) => {
-    const shell = process.platform === "win32" ? "cmd" : "sh";
-    const shellArgs = process.platform === "win32" ? ["/d", "/s", "/c", `"${command}"`] : ["-c", command];
-    const child = spawn(shell, shellArgs, {
+    const parsed = process.platform === "win32" ? parseWindowsHookCommand(command) : null;
+    const child = parsed
+      ? spawn(parsed.command, parsed.args, {
+          cwd,
+          stdio: ["pipe", "pipe", "pipe"]
+        })
+      : spawn(process.platform === "win32" ? "cmd" : "sh", [process.platform === "win32" ? "/c" : "-c", command], {
       cwd,
       stdio: ["pipe", "pipe", "pipe"]
-    });
+        });
     let stderr = "";
     child.stderr.on("data", (chunk) => {
       stderr += chunk.toString();
@@ -187,6 +191,12 @@ function runHook(command, cwd, payload) {
     });
     child.stdin.end(JSON.stringify(payload));
   });
+}
+
+function parseWindowsHookCommand(command) {
+  const match = String(command).match(/^"([^"]+)"\s+"([^"]+)"\s+(\S+)$/);
+  if (!match) return null;
+  return { command: match[1], args: [match[2], match[3]] };
 }
 
 async function fetchJson(url, options) {
