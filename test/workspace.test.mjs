@@ -8,6 +8,12 @@ import { CODEX_HOOK_EVENTS, analyzeWorkspace, installWorkspace, uninstallWorkspa
 
 const embeddedHookPattern = /codex-swarm-monitor[\\/]hook\.mjs/;
 
+function hasEmbeddedHookCommand(hooksJson) {
+  return Object.values(hooksJson.hooks || {}).some((groups) =>
+    groups.some((group) => group.hooks.some((hook) => embeddedHookPattern.test(hook.command)))
+  );
+}
+
 test("analyzeWorkspace summarizes Codex/Ralph artifacts", async () => {
   const dir = mkdtempSync(join(tmpdir(), "swarm-workspace-"));
   try {
@@ -208,7 +214,7 @@ test("uninstallWorkspace removes only Codex Swarm hooks and bundled runtime", as
     );
 
     await installWorkspace(dir, "http://127.0.0.1:4999", { includeMcp: true });
-    assert.match(readFileSync(join(dir, ".codex/hooks.json"), "utf8"), embeddedHookPattern);
+    assert.equal(hasEmbeddedHookCommand(JSON.parse(readFileSync(join(dir, ".codex/hooks.json"), "utf8"))), true);
     assert.equal(existsSync(join(dir, ".codex/codex-swarm-monitor/hook.mjs")), true);
     assert.match(readFileSync(join(dir, ".codex/config.toml"), "utf8"), /Codex Swarm Monitor MCP Server/);
 

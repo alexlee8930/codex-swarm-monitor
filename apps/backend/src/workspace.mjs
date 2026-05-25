@@ -171,7 +171,7 @@ export async function uninstallWorkspace(inputPath = process.cwd()) {
 
 async function writeEmbeddedHook(embeddedHook, hookScript, eventBusUrl) {
   const source = await readFile(hookScript, "utf8");
-  const sourceWithoutShebang = source.replace(/^#!.*\n/, "");
+  const sourceWithoutShebang = source.replace(/^#!.*\r?\n/, "");
   await writeFile(
     embeddedHook,
     `#!/usr/bin/env node
@@ -303,7 +303,7 @@ async function scanFiles(root) {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
       if (ignored.has(entry.name)) continue;
       const fullPath = join(dir, entry.name);
-      const rel = relative(root, fullPath);
+      const rel = relative(root, fullPath).replace(/\\/g, "/");
       if (entry.isDirectory()) {
         await walk(fullPath, depth + 1);
       } else if (entry.isFile()) {
