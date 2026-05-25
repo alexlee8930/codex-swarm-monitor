@@ -69,8 +69,14 @@ assert.match(ciWorkflow, /ubuntu-latest/);
 assert.match(ciWorkflow, /macos-14/);
 assert.match(ciWorkflow, /windows-latest/);
 assert.match(ciWorkflow, /npm run verify/);
+assert.match(ciWorkflow, /actions\/checkout@v5/);
+assert.match(ciWorkflow, /actions\/setup-node@v5/);
 assert.match(ciWorkflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true/);
 assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true/);
+assert.match(workflow, /actions\/checkout@v5/);
+assert.match(workflow, /actions\/setup-node@v5/);
+assert.match(workflow, /actions\/upload-artifact@v5/);
+assert.match(workflow, /actions\/download-artifact@v5/);
 assert.match(workflow, /macos-15-intel/, "release workflow must build macOS Intel on a current Intel runner label");
 assert.doesNotMatch(workflow, /macos-13/, "release workflow must not use the retired macOS 13 runner label");
 for (const artifact of [
