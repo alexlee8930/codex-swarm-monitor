@@ -249,7 +249,7 @@ async function removeHooks(hooksPath) {
 }
 
 function isSwarmHookCommand(command) {
-  const value = String(command || "");
+  const value = String(command || "").replace(/\\/g, "/");
   return value.includes(`${EMBED_DIR}/${EMBED_HOOK}`) || value.includes("codex-swarm-hook.mjs");
 }
 

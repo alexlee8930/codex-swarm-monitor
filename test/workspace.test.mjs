@@ -6,6 +6,8 @@ import { join } from "node:path";
 import test from "node:test";
 import { CODEX_HOOK_EVENTS, analyzeWorkspace, installWorkspace, uninstallWorkspace } from "../apps/backend/src/workspace.mjs";
 
+const embeddedHookPattern = /codex-swarm-monitor[\\/]hook\.mjs/;
+
 test("analyzeWorkspace summarizes Codex/Ralph artifacts", async () => {
   const dir = mkdtempSync(join(tmpdir(), "swarm-workspace-"));
   try {
@@ -92,8 +94,8 @@ test("installWorkspace writes a self-contained project-local Codex hook", async 
     assert.equal(existsSync(join(dir, ".codex/codex-swarm-monitor/hook.mjs")), true);
     assert.equal(workspace.trust.eventBusUrl, "http://127.0.0.1:4999");
     for (const eventName of CODEX_HOOK_EVENTS) {
-      const command = hooksJson.hooks[eventName][0].hooks.find((hook) => hook.command.includes("codex-swarm-monitor/hook.mjs"))?.command;
-      assert.match(command, new RegExp(`codex-swarm-monitor\\/hook\\.mjs" ${eventName}$`));
+      const command = hooksJson.hooks[eventName][0].hooks.find((hook) => embeddedHookPattern.test(hook.command))?.command;
+      assert.match(command, new RegExp(`codex-swarm-monitor[\\\\/]hook\\.mjs" ${eventName}$`));
     }
     assert.doesNotMatch(readFileSync(join(dir, ".codex/codex-swarm-monitor/hook.mjs"), "utf8"), /Users\/yuchanlee\/codex_dashboard/);
   } finally {
@@ -134,11 +136,46 @@ test("installWorkspace preserves existing hooks while requiring complete swarm c
     assert.equal(hooksJson.hooks.PostToolUse[1].hooks.some((hook) => hook.command === "node keep-second-group.mjs"), true);
     for (const eventName of CODEX_HOOK_EVENTS) {
       assert.equal(
-        hooksJson.hooks[eventName].some((group) => group.hooks.some((hook) => hook.command.includes("codex-swarm-monitor/hook.mjs"))),
+        hooksJson.hooks[eventName].some((group) => group.hooks.some((hook) => embeddedHookPattern.test(hook.command))),
         true,
         `${eventName} should contain the swarm monitor hook`
       );
     }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("analyzeWorkspace recognizes Windows-style embedded hook paths", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "swarm-windows-hooks-"));
+  try {
+    await mkdir(join(dir, ".codex"), { recursive: true });
+    writeFileSync(
+      join(dir, ".codex/hooks.json"),
+      JSON.stringify({
+        hooks: Object.fromEntries(
+          CODEX_HOOK_EVENTS.map((eventName) => [
+            eventName,
+            [
+              {
+                hooks: [
+                  {
+                    type: "command",
+                    command: `"C:\\Program Files\\nodejs\\node.exe" "C:\\Users\\runneradmin\\work\\project\\.codex\\codex-swarm-monitor\\hook.mjs" ${eventName}`
+                  }
+                ]
+              }
+            ]
+          ])
+        )
+      })
+    );
+
+    const workspace = await analyzeWorkspace(dir);
+
+    assert.equal(workspace.install.configured, true);
+    assert.deepEqual(workspace.harness.hooks.swarmEvents, CODEX_HOOK_EVENTS);
+    assert.deepEqual(workspace.harness.hooks.missingSwarmEvents, []);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -171,7 +208,7 @@ test("uninstallWorkspace removes only Codex Swarm hooks and bundled runtime", as
     );
 
     await installWorkspace(dir, "http://127.0.0.1:4999", { includeMcp: true });
-    assert.match(readFileSync(join(dir, ".codex/hooks.json"), "utf8"), /codex-swarm-monitor\/hook\.mjs/);
+    assert.match(readFileSync(join(dir, ".codex/hooks.json"), "utf8"), embeddedHookPattern);
     assert.equal(existsSync(join(dir, ".codex/codex-swarm-monitor/hook.mjs")), true);
     assert.match(readFileSync(join(dir, ".codex/config.toml"), "utf8"), /Codex Swarm Monitor MCP Server/);
 
@@ -181,7 +218,7 @@ test("uninstallWorkspace removes only Codex Swarm hooks and bundled runtime", as
 
     assert.equal(workspace.install.configured, false);
     assert.match(hooks, /existing-hook\.mjs/);
-    assert.doesNotMatch(hooks, /codex-swarm-monitor\/hook\.mjs|codex-swarm-hook\.mjs/);
+    assert.doesNotMatch(hooks, /codex-swarm-monitor[\\/]hook\.mjs|codex-swarm-hook\.mjs/);
     assert.doesNotMatch(config, /Codex Swarm Monitor MCP Server|agent_spawner/);
     assert.equal(existsSync(join(dir, ".codex/codex-swarm-monitor/hook.mjs")), false);
   } finally {
