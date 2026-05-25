@@ -6,25 +6,9 @@ The app does not require `oh-my-codex` for end users. A user can install Codex, 
 
 ## Run
 
-End-user promise: after Codex is installed, the user starts this through the Codex plugin marketplace or a released standalone bundle. They do not install Node, npm, Bun, OMX, or this source checkout. The runtime bundle includes Node, the plugin/start command installs project-local Codex hooks with `--connect`, and the live dashboard stays empty until real Codex events arrive.
+End-user promise: after Codex is installed, the user starts this as an app or released standalone bundle. They do not install Node, npm, Bun, OMX, or this source checkout. The runtime bundle includes Node, startup can install project-local Codex hooks with `--connect`, and the live dashboard stays empty until real Codex events arrive.
 
-Primary Codex plugin path after the plugin is available in a Codex marketplace:
-
-```bash
-codex plugin add codex-swarm-monitor@codex-swarm-monitor
-```
-
-Then ask Codex:
-
-```text
-Start the Codex Swarm Monitor for this workspace.
-```
-
-The plugin skill starts the monitor, keeps the local process running, opens the printed URL, and uses `--connect` so native workspace hooks are installed. It should not use the old mockup HTML or synthetic events to prove success.
-
-If the plugin cannot bootstrap the launcher, that is a release publication problem rather than a user setup step. The error output names the missing release version, target platform, release source, and checked install path. Users should not be asked to install Node or npm; publish the matching standalone archive and `.sha256` checksum, or use `CODEX_SWARM_RELEASE_DIR` only for an offline release test.
-
-macOS app path, after downloading a release app archive:
+Primary macOS app path, after downloading a release app archive:
 
 ```bash
 tar -xzf codex-swarm-monitor-darwin-<arch>.app.tar.gz
@@ -42,6 +26,39 @@ tar -xzf codex-swarm-monitor-<platform>-<arch>.tar.gz
 
 This bundle includes its own Node runtime. Users do not install Node or npm.
 
+Optional Codex plugin path if the plugin is later available in a Codex marketplace:
+
+```bash
+codex plugin add codex-swarm-monitor@codex-swarm-monitor
+```
+
+Then ask Codex:
+
+```text
+Start the Codex Swarm Monitor for this workspace.
+```
+
+The plugin skill starts the monitor, keeps the local process running, opens the printed URL, and uses `--connect` so native workspace hooks are installed. It should not use the old mockup HTML or synthetic events to prove success.
+
+If the plugin cannot bootstrap the launcher, that is a plugin publication problem rather than a user setup step. The error output names the missing release version, target platform, release source, and checked install path. Users should not be asked to install Node or npm; publish the matching standalone archive and `.sha256` checksum, or use `CODEX_SWARM_RELEASE_DIR` only for an offline release test.
+
+Optional local install from inside the extracted bundle:
+
+```bash
+./install.sh
+codex-swarm-monitor --workspace /path/to/codex-project --connect --open
+```
+
+The installer copies the app and bundled runtime into a stable local install root, then writes a launcher into `$PREFIX/bin` or `$HOME/.local/bin`. On Windows, run `install.ps1`, then launch `codex-swarm-monitor.cmd`.
+
+For manual macOS Gatekeeper removal while unsigned:
+
+```bash
+xattr -dr com.apple.quarantine "Codex Swarm Monitor.app"
+```
+
+This is only needed until the optional macOS signing and notarization secrets are configured for trusted public downloads.
+
 Release artifacts are built for:
 
 - `codex-swarm-monitor-linux-x64`
@@ -55,15 +72,6 @@ macOS app wrapper archives are also built for:
 - `codex-swarm-monitor-darwin-x64.app.tar.gz`
 
 Each archive is accompanied by a `.sha256` checksum when the runner provides `tar`. The GitHub release workflow also generates artifact provenance attestations for the archive and checksum with GitHub Actions artifact attestations. When release secrets are configured, the workflow additionally performs macOS signing and notarization for the bundled runtime and Windows Authenticode signing for the bundled runtime before regenerating checksums.
-
-Optional local install from inside the extracted bundle:
-
-```bash
-./install.sh
-codex-swarm-monitor --workspace /path/to/codex-project --connect --open
-```
-
-The installer copies the app and bundled runtime into a stable local install root, then writes a launcher into `$PREFIX/bin` or `$HOME/.local/bin`. On Windows, run `install.ps1`, then launch `codex-swarm-monitor.cmd`.
 
 Developer marketplace test path from a local plugin checkout:
 
@@ -187,9 +195,9 @@ npm run desktop:smoke
 curl -f http://127.0.0.1:4000/health
 ```
 
-`npm run verify` runs syntax checks, Node tests, the packaged tarball smoke test, local avatar smoke test, Codex plugin smoke test, Codex CLI plugin install smoke when Codex is available, plugin package smoke test, standalone bundle smoke test, macOS desktop app wrapper smoke, artifact checksum/manifest audit, plugin bootstrap install smoke test, packaged Codex-only plugin smoke test, fresh-machine smoke test, realtime SSE/UI smoke test, runtime browser/API smoke test, and the optional MCP spawner dry-run. The CI workflow runs this product gate on Linux, macOS, and Windows for pull requests and pushes to `main`. `npm run release:verify` is the public-release gate: it runs the product gate, builds the Linux, macOS Apple Silicon, macOS Intel, and Windows x64 standalone archives plus macOS `.app` archives from official Node runtimes, builds the marketplace submission, verifies the full release asset set, and prints release readiness. The marketplace submission smoke extracts the review bundle, verifies the screenshot, plugin archive, release asset manifest, no-mock/no-remote-avatar claims, Codex-only user promise, and absence of development app source. The avatar smoke verifies every core role gets a distinct deterministic local SVG portrait with no remote provider. The realtime smoke starts the monitor on a temporary workspace, opens the workspace-scoped SSE stream, posts real hook-shaped events, verifies the live SSE message contains the agent state and v7 local avatar, enforces under-1000ms local SSE delivery, then checks the rendered UI agent card and Event freshness row when Chrome is available. The artifact audit rebuilds the standalone archive, verifies the `.sha256` file, extracts the archive, confirms the manifest has no build-machine absolute paths, and runs the extracted launcher. The release audit verifies that release workflows create GitHub artifact provenance attestations for standalone archives, app wrapper archives, and checksum files, and that optional macOS signing/notarization plus Windows Authenticode signing paths are present. `npm run release:remote-smoke` downloads the published plugin bootstrap path from GitHub Release, while `npm run release:desktop-remote-smoke` downloads the published macOS `.app` archive, verifies its checksum and bundle metadata, and executes the downloaded app launcher on a matching Mac. `npm run release:readiness` and `GET /release/readiness` report the public-release prerequisites that cannot be proven from source alone, including Git remote, version tag, all Linux/macOS/Windows standalone artifacts and checksums, macOS app wrapper artifacts and checksums, the Codex plugin release package and checksum, Codex marketplace submission bundle, Codex marketplace publication verification, signing secrets, GitHub CLI access, published GitHub release visibility, and published release asset completeness; each failing check includes a remediation, the CLI output includes a release checklist with exact commands, and `-- --strict` fails when any release prerequisite is missing. The bootstrap smoke verifies the plugin's shell installer can install the standalone runtime from release artifacts without relying on an npm project. The Codex-only smoke extracts the published plugin package shape into a temporary folder, confirms it does not contain the development source app or `package.json`, and starts through the plugin script using only release artifacts. The fresh-machine smoke installs the standalone bundle into a temporary home, deletes the extracted bundle folder, starts the installed launcher, connects a new workspace, executes the installed Codex hook, and verifies that a real event appears in `/state` with no mock data. The runtime smoke starts the CLI on a random local port and verifies the real UI entrypoint; when Chrome or Chromium is available it captures desktop, tablet, and mobile PNG screenshots, checks their dimensions, and rejects blank renders.
+`npm run verify` runs syntax checks, Node tests, the packaged tarball smoke test, local avatar smoke test, Codex plugin smoke test, Codex CLI plugin install smoke when Codex is available, plugin package smoke test, standalone bundle smoke test, macOS desktop app wrapper smoke, artifact checksum/manifest audit, plugin bootstrap install smoke test, packaged Codex-only plugin smoke test, fresh-machine smoke test, realtime SSE/UI smoke test, runtime browser/API smoke test, and the optional MCP spawner dry-run. The CI workflow runs this product gate on Linux, macOS, and Windows for pull requests and pushes to `main`. `npm run release:verify` is the public-release gate: it runs the product gate, builds the Linux, macOS Apple Silicon, macOS Intel, and Windows x64 standalone archives plus macOS `.app` archives from official Node runtimes, builds the optional marketplace submission, verifies the full release asset set, and prints release readiness. The marketplace submission smoke extracts the review bundle, verifies the screenshot, plugin archive, release asset manifest, no-mock/no-remote-avatar claims, Codex-only user promise, and absence of development app source. The avatar smoke verifies every core role gets a distinct deterministic local SVG portrait with no remote provider. The realtime smoke starts the monitor on a temporary workspace, opens the workspace-scoped SSE stream, posts real hook-shaped events, verifies the live SSE message contains the agent state and v7 local avatar, enforces under-1000ms local SSE delivery, then checks the rendered UI agent card and Event freshness row when Chrome is available. The artifact audit rebuilds the standalone archive, verifies the `.sha256` file, extracts the archive, confirms the manifest has no build-machine absolute paths, and runs the extracted launcher. The release audit verifies that release workflows create GitHub artifact provenance attestations for standalone archives, app wrapper archives, and checksum files, and that optional macOS signing/notarization plus Windows Authenticode signing paths are present. `npm run release:remote-smoke` downloads the published plugin/bootstrap path from GitHub Release, while `npm run release:desktop-remote-smoke` downloads the published macOS `.app` archive, verifies its checksum and bundle metadata, and executes the downloaded app launcher on a matching Mac. `npm run release:readiness` and `GET /release/readiness` report the public-release prerequisites that cannot be proven from source alone, including Git remote, version tag, all Linux/macOS/Windows standalone artifacts and checksums, macOS app wrapper artifacts and checksums, the optional Codex plugin release package and marketplace submission bundle, optional Codex marketplace publication, signing secrets, GitHub CLI access, published GitHub release visibility, and published release asset completeness; each failing required check includes a remediation, the CLI output includes a release checklist with exact commands, and `-- --strict` fails when any release prerequisite is missing. The bootstrap smoke verifies the plugin's shell installer can install the standalone runtime from release artifacts without relying on an npm project. The Codex-only smoke extracts the published plugin package shape into a temporary folder, confirms it does not contain the development source app or `package.json`, and starts through the plugin script using only release artifacts. The fresh-machine smoke installs the standalone bundle into a temporary home, deletes the extracted bundle folder, starts the installed launcher, connects a new workspace, executes the installed Codex hook, and verifies that a real event appears in `/state` with no mock data. The runtime smoke starts the CLI on a random local port and verifies the real UI entrypoint; when Chrome or Chromium is available it captures desktop, tablet, and mobile PNG screenshots, checks their dimensions, and rejects blank renders.
 
-The public release procedure is maintained in [docs/release.md](docs/release.md). It is the authoritative runbook for publishing the standalone assets, plugin package, GitHub release, and Codex marketplace entry.
+The public release procedure is maintained in [docs/release.md](docs/release.md). It is the authoritative runbook for publishing the app, standalone assets, plugin package, GitHub release, and optional Codex marketplace entry.
 
 Before tagging a public release, run `npm run release:sync-source` after configuring `git origin`. This aligns the plugin manifest release URLs with the public GitHub release source that end-user Codex installs will download from.
 
@@ -197,4 +205,4 @@ The privacy and data-boundary statement is maintained in [docs/privacy.md](docs/
 
 ## Current Boundary
 
-This is a local-first app, not a hosted multi-tenant SaaS. The repo is now an npm CLI package, a Codex plugin source, and a standalone release bundle that includes Node. The release workflow builds Linux, macOS, and Windows standalone artifacts and contains optional signing/notarization paths gated by release secrets. The remaining release work is public marketplace/publishing ownership, a real signed/notarized release run with production certificates, Codex hook-trust UX validation across external fresh machines, and LiteLLM/OpenInference model-request capture.
+This is a local-first app, not a hosted multi-tenant SaaS. The repo is now an npm CLI package, a macOS app wrapper, a Codex plugin source, and a standalone release bundle that includes Node. The release workflow builds Linux, macOS, and Windows standalone artifacts and contains optional signing/notarization paths gated by release secrets. The remaining release hardening is a real signed/notarized release run with production certificates, Codex hook-trust UX validation across external fresh machines, and optional LiteLLM/OpenInference model-request capture.

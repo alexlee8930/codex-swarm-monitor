@@ -144,12 +144,12 @@ assert.match(readme, /Users do not install Node or npm/);
 assert.match(readme, /docs\/release\.md/);
 assert.match(readme, /docs\/privacy\.md/);
 assert.match(readme, /MARKETPLACE\.md/);
-assert.match(readme, /Primary Codex plugin path/);
-assert.match(readme, /macOS app path/);
+assert.match(readme, /Primary macOS app path/);
+assert.match(readme, /Optional Codex plugin path/);
 assert.match(readme, /Developer marketplace test path from a local plugin checkout/);
 assert.ok(
-  readme.indexOf("Primary Codex plugin path") < readme.indexOf("Fallback direct standalone path"),
-  "README must present the Codex plugin as the first end-user run path"
+  readme.indexOf("Primary macOS app path") < readme.indexOf("Fallback direct standalone path"),
+  "README must present the app as the first end-user run path"
 );
 assert.ok(
   readme.indexOf("Fallback direct standalone path") < readme.indexOf("For npm package verification only"),
@@ -319,7 +319,7 @@ assert.match(read("apps/ui/app.js"), /Mock data/);
 assert.match(read("apps/ui/index.html"), /copy-launch/);
 assert.match(read("apps/ui/index.html"), /codex-command/);
 assert.match(read("apps/ui/index.html"), /copy-codex/);
-assert.match(read("apps/backend/src/meta.mjs"), /Codex plugin \+ standalone bundle/);
+assert.match(read("apps/backend/src/meta.mjs"), /macOS app \+ standalone bundle/);
 assert.match(read("apps/backend/src/meta.mjs"), /userPrerequisites: \["Codex"\]/);
 assert.match(read("apps/backend/src/meta.mjs"), /endUsersNeedNode: false/);
 assert.match(read("apps/backend/src/meta.mjs"), /endUsersNeedNpm: false/);
@@ -421,8 +421,9 @@ assert.match(readiness, /sync-plugin-release-source/);
 assert.match(readiness, /marketplace-submission/);
 assert.match(readiness, /Codex marketplace submission bundle built/);
 assert.match(readiness, /codex-marketplace-publication/);
-assert.match(readiness, /Codex plugin published in a marketplace/);
+assert.match(readiness, /Optional Codex plugin marketplace publication/);
 assert.match(readiness, /publish-codex-marketplace/);
+assert.match(readiness, /optional: true/);
 assert.match(readiness, /CODEX_SWARM_MARKETPLACE_PUBLISHED/);
 assert.match(readiness, /missing/);
 assert.match(readiness, /published-release/);
@@ -467,7 +468,7 @@ const releaseRunbook = read("docs/release.md");
 assert.match(releaseRunbook, /Codex only/);
 assert.match(releaseRunbook, /npm run verify/);
 assert.match(releaseRunbook, /npm run screenshot:marketplace/);
-assert.match(releaseRunbook, /npm run release:readiness -- --strict/);
+assert.match(releaseRunbook, /npm run release:readiness/);
 assert.match(releaseRunbook, /npm run codex-only:smoke/);
 assert.match(releaseRunbook, /gh run download --dir dist/);
 assert.match(releaseRunbook, /npm run plugin:package/);
@@ -478,7 +479,7 @@ assert.match(releaseRunbook, /find dist -maxdepth 1 -type f/);
 assert.match(releaseRunbook, /gh release upload v0\.1\.0 "\$\{release_assets\[@\]\}" --clobber/);
 assert.match(releaseRunbook, /npm run release:remote-smoke/);
 assert.match(releaseRunbook, /codex plugin add codex-swarm-monitor@codex-swarm-monitor/);
-assert.match(releaseRunbook, /CODEX_SWARM_MARKETPLACE_PUBLISHED=1 npm run release:readiness -- --strict/);
+assert.match(releaseRunbook, /CODEX_SWARM_MARKETPLACE_PUBLISHED=1 npm run release:readiness/);
 assert.match(releaseRunbook, /Last-Event-ID/);
 assert.match(releaseRunbook, /remote avatar providers/);
 assert.doesNotMatch(releaseRunbook, /swarm-ui-mockup|seed dashboard|DiceBear/i);

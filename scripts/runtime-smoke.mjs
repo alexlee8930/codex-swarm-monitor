@@ -30,7 +30,7 @@ try {
   assert.equal(version.name, "codex-swarm-monitor");
   assert.equal(version.distribution, "source");
   assert.equal(version.release.mockData, false);
-  assert.match(version.release.endUserPath, /Codex plugin/);
+  assert.match(version.release.endUserPath, /app|standalone/i);
   assert.deepEqual(version.release.userPrerequisites, ["Codex"]);
   assert.equal(version.release.endUsersNeedNode, false);
   assert.equal(version.release.endUsersNeedNpm, false);
@@ -127,7 +127,7 @@ try {
     assert.match(renderedDom, /Only Codex is required for end users|Install and sign in to Codex first/);
     assert.match(renderedDom, /Project-local hook/);
     assert.match(renderedDom, /Agent cards appear only after real Codex hook or MCP events|Agent cards and logs come from actual hook payloads/);
-    assert.match(renderedDom, /Finish publishing/);
+    assert.match(renderedDom, /Ready|Finish publishing/);
     assert.doesNotMatch(renderedDom, /Hook target changed/);
     assert.match(renderedDom, /Event ingest/);
     assert.match(renderedDom, /waiting for real Codex activity/);

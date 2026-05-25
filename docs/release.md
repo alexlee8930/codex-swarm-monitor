@@ -1,6 +1,6 @@
 # Public Release Runbook
 
-This runbook is the release path for the "Codex only" user promise. A public user should install Codex, add the Codex Swarm Monitor plugin from the Codex marketplace, and start the local monitor without installing Node, npm, Bun, OMX, or this source checkout.
+This runbook is the release path for the app-first "Codex only" user promise. A public user should install Codex, download the Codex Swarm Monitor app or standalone release bundle, and start the local monitor without installing Node, npm, Bun, OMX, or this source checkout. Codex marketplace publication is an optional distribution path, not a required launch blocker.
 
 ## Release Gate
 
@@ -11,7 +11,7 @@ npm run screenshot:marketplace
 npm run verify
 npm run release:verify
 npm run release:audit
-npm run release:readiness -- --strict
+npm run release:readiness
 ```
 
 `npm run verify` must include:
@@ -36,7 +36,7 @@ git remote add origin <repo-url>
 git push -u origin HEAD
 ```
 
-Sync the plugin marketplace metadata to the GitHub origin before tagging. This is what makes the Codex-only bootstrap download standalone archives from the correct public release:
+Sync the optional plugin metadata to the GitHub origin before tagging. This keeps the plugin bootstrap path aligned with the public app and standalone release source:
 
 ```bash
 npm run release:sync-source
@@ -72,7 +72,7 @@ Or download GitHub Actions artifacts after the release workflow runs:
 gh run download --dir dist
 ```
 
-Build the Codex plugin package:
+Build the optional Codex plugin package and marketplace submission:
 
 ```bash
 npm run screenshot:marketplace
@@ -86,12 +86,15 @@ Verify the complete release asset set:
 npm run release:artifacts -- dist
 ```
 
-The release must include:
+The release must include the app and standalone artifacts:
 
 - all four standalone archives
 - all four standalone `.sha256` checksum files
 - both macOS `.app` wrapper archives
 - both macOS `.app` wrapper `.sha256` checksum files
+
+The release also includes optional Codex plugin review artifacts:
+
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz`
 - `codex-swarm-monitor-plugin-0.1.0.tar.gz.sha256`
 - `codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz`
@@ -122,7 +125,7 @@ npm run release:remote-smoke
 npm run release:desktop-remote-smoke
 ```
 
-## Publish Codex Marketplace Plugin
+## Optional Codex Marketplace Plugin
 
 Before submitting, build and review the packaged marketplace submission:
 
@@ -135,7 +138,7 @@ npm run release:desktop-remote-smoke
 CODEX_SWARM_REQUIRE_CODEX_PLUGIN_SMOKE=1 npm run codex-plugin:smoke
 ```
 
-Publish `codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz` to the target Codex marketplace using the marketplace publishing process. After publication, verify from a clean Codex install:
+Publishing `codex-swarm-monitor-marketplace-submission-0.1.0.tar.gz` to a target Codex marketplace is optional. The production app path is already covered by the macOS `.app` archives and standalone bundles. If the plugin is published later, verify from a clean Codex install:
 
 ```bash
 codex plugin add codex-swarm-monitor@codex-swarm-monitor
@@ -156,10 +159,10 @@ Expected behavior:
 - live agent/event panels stay empty until real Codex activity happens
 - Realtime Pipeline shows SSE and `Replay recovery`
 
-After this external verification succeeds, set the release readiness marker for the final strict check:
+After this optional external verification succeeds, set the release readiness marker if you want the optional marketplace check to show green:
 
 ```bash
-CODEX_SWARM_MARKETPLACE_PUBLISHED=1 npm run release:readiness -- --strict
+CODEX_SWARM_MARKETPLACE_PUBLISHED=1 npm run release:readiness
 ```
 
 ## Optional Signing

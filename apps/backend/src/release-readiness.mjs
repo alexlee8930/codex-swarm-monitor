@@ -84,8 +84,9 @@ export function releaseReadiness(packageRoot = PACKAGE_ROOT, options = {}) {
         ? `Set plugins/codex-swarm-monitor/.codex-plugin/plugin.json repository/homepage/website URLs to https://github.com/${originRepo} before packaging.`
         : "Configure the public GitHub origin first; the plugin bootstrap release URL is derived from its repository metadata."
     }),
-    check("codex-marketplace-publication", "Codex plugin published in a marketplace", marketplacePublished(options), {
-      remediation: "Publish the Codex plugin package to the target Codex marketplace, verify `codex plugin add codex-swarm-monitor@codex-swarm-monitor`, then set CODEX_SWARM_MARKETPLACE_PUBLISHED=1 for release readiness."
+    check("codex-marketplace-publication", "Optional Codex plugin marketplace publication", marketplacePublished(options), {
+      optional: true,
+      remediation: "Optional distribution path only. If publishing the Codex plugin package to a Codex marketplace, verify `codex plugin add codex-swarm-monitor@codex-swarm-monitor`, then set CODEX_SWARM_MARKETPLACE_PUBLISHED=1 for release readiness."
     }),
     check("macos-signing-secrets", "macOS signing/notarization secrets available", envPresent([
       "MACOS_CERTIFICATE_P12_BASE64",
@@ -248,12 +249,12 @@ function releasePlan({ checks, version, tag }) {
     },
     {
       id: "publish-codex-marketplace",
-      label: "Publish Codex marketplace plugin",
+      label: "Optional Codex marketplace plugin",
       command: "codex plugin add codex-swarm-monitor@codex-swarm-monitor",
       state: ok("codex-marketplace-publication") ? "done" : ok("marketplace-submission") ? "ready" : "blocked",
       detail: ok("codex-marketplace-publication")
         ? "Codex marketplace publication has been externally verified."
-        : "Publish the marketplace submission bundle to the target Codex marketplace and verify a clean Codex install can add it."
+        : "Optional path. The primary public distribution is the released app bundle and standalone archives."
     }
   ];
 }

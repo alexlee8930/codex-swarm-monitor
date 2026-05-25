@@ -500,6 +500,7 @@ function renderOperations() {
   if (!list) return;
   const releaseBlockers = releaseState?.blockers || [];
   const releaseWarnings = releaseState?.warnings || [];
+  const releaseReady = releaseState?.ok === true;
   const build = versionState
     ? `${versionState.version} · ${versionState.distribution}`
     : "pending";
@@ -527,8 +528,8 @@ function renderOperations() {
     { label: "Bootstrap", value: versionState?.release?.bootstrap || "standalone first", tone: "ok" },
     {
       label: "Release gate",
-      value: releaseState?.strictOk ? `${releaseState.tag} ready for public release` : `${releaseState?.tag || "release"} has ${releaseBlockers.length} required blocker${releaseBlockers.length === 1 ? "" : "s"}`,
-      tone: releaseState?.strictOk ? "ok" : "fail"
+      value: releaseReady ? `${releaseState.tag} app release ready` : `${releaseState?.tag || "release"} has ${releaseBlockers.length} required blocker${releaseBlockers.length === 1 ? "" : "s"}`,
+      tone: releaseReady ? "ok" : "fail"
     },
     ...releaseBlockers.slice(0, 4).map((item) => ({
       label: labelize(item.id),
@@ -713,7 +714,7 @@ function renderLifecycle() {
   const activeStages = stages.filter((stage) => stage.state === "active").length;
   const releaseBlockers = releaseState?.blockers || [];
   const releaseWarnings = releaseState?.warnings || [];
-  const releaseReady = releaseState?.strictOk === true;
+  const releaseReady = releaseState?.ok === true;
   const steps = [
     {
       label: "Folder",
@@ -752,9 +753,9 @@ function renderLifecycle() {
     },
     {
       label: "Ship",
-      value: releaseReady ? `${releaseState.tag} public ready` : releaseBlockers.length ? `${releaseBlockers.length} blockers` : `${releaseWarnings.length} warnings`,
+      value: releaseReady ? `${releaseState.tag} app ready` : releaseBlockers.length ? `${releaseBlockers.length} blockers` : `${releaseWarnings.length} warnings`,
       detail: releaseReady
-        ? "Release artifacts and marketplace checks passed"
+        ? "App, standalone, realtime, and release artifact checks passed"
         : releaseBlockers.length
           ? releaseBlockers.map((item) => labelize(item.id)).slice(0, 2).join(" · ")
           : "Optional signing or published release visibility checks remain",

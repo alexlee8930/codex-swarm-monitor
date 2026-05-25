@@ -29,7 +29,7 @@ test("release readiness text includes actionable release checklist", () => {
   assert.match(output, /plugin-release-source/);
   assert.match(output, /Sync plugin release source/);
   assert.match(output, /npm run release:sync-source/);
-  assert.match(output, /Publish Codex marketplace plugin/);
+  assert.match(output, /Optional Codex marketplace plugin/);
   assert.match(output, /codex plugin add codex-swarm-monitor@codex-swarm-monitor/);
   assert.doesNotMatch(output, /gh release create v0\.1\.0 dist\/\*/);
 });
@@ -69,6 +69,7 @@ test("release readiness recognizes nested GitHub artifact downloads", async () =
     assert.equal(summary.checks.find((item) => item.id === "plugin-package").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "marketplace-submission").ok, true);
     assert.equal(summary.checks.find((item) => item.id === "codex-marketplace-publication").ok, false);
+    assert.equal(summary.checks.find((item) => item.id === "codex-marketplace-publication").optional, true);
     assert.equal(summary.plan.find((item) => item.id === "collect-artifacts").state, "done");
     assert.equal(summary.plan.find((item) => item.id === "verify-release-assets").state, "ready");
     assert.equal(summary.plan.find((item) => item.id === "publish-codex-marketplace").state, "ready");

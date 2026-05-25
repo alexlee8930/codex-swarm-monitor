@@ -16,8 +16,8 @@ export function productMeta(packageRoot = PACKAGE_ROOT) {
     node: process.version,
     build: buildInfo,
     release: {
-      endUserPath: "Codex plugin + standalone bundle",
-      bootstrap: "plugin installs standalone before npm fallback",
+      endUserPath: "macOS app + standalone bundle",
+      bootstrap: "app or standalone bundle starts the local monitor",
       userPrerequisites: ["Codex"],
       bundledRuntime: "Node runtime included in standalone bundles",
       endUsersNeedNode: false,
