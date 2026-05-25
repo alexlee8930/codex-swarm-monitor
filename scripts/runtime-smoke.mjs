@@ -112,7 +112,7 @@ try {
     assert.match(renderedDom, /Verification commands/);
     assert.match(renderedDom, /npm test/);
     assert.match(renderedDom, /--connect --open/);
-    assert.match(renderedDom, /codex_dashboard[\s\S]{0,120}codex/);
+    assert.match(renderedDom, new RegExp(`${escapeRegex(basename(root))}[\\s\\S]{0,120}codex`));
     assert.match(renderedDom, /User prerequisites/);
     assert.match(renderedDom, /Bundled runtime/);
     assert.match(renderedDom, /Realtime Pipeline/);
@@ -311,4 +311,8 @@ function assertPng(path, viewport) {
   assert.equal(file.readUInt32BE(0), 0x89504e47, `${viewport.name} screenshot must be PNG`);
   assert.equal(file.readUInt32BE(16), viewport.width, `${viewport.name} screenshot width`);
   assert.equal(file.readUInt32BE(20), viewport.height, `${viewport.name} screenshot height`);
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
