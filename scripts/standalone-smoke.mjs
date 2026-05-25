@@ -15,7 +15,7 @@ const temp = mkdtempSync(join(tmpdir(), "codex-swarm-standalone-"));
 
 try {
   assert.equal(existsSync(launcher), true);
-  const help = execFileSync(launcher, ["--help"], { encoding: "utf8" });
+  const help = runLauncherSync(launcher, ["--help"]);
   assert.match(help, /--doctor/);
   assert.match(help, /--support/);
   assert.equal(existsSync(join(bundleRoot, "app/build-info.json")), true);
@@ -23,8 +23,8 @@ try {
   const buildInfo = JSON.parse(readFileSync(join(bundleRoot, "app/build-info.json"), "utf8"));
   assert.equal(buildInfo.version, manifest.version);
   assert.equal(buildInfo.target, manifest.target);
-  assert.match(execFileSync(launcher, ["--version"], { encoding: "utf8" }), /codex-swarm-monitor 0\.1\.0 \(standalone/);
-  const versionJson = JSON.parse(execFileSync(launcher, ["--version", "--json"], { encoding: "utf8" }));
+  assert.match(runLauncherSync(launcher, ["--version"]), /codex-swarm-monitor 0\.1\.0 \(standalone/);
+  const versionJson = JSON.parse(runLauncherSync(launcher, ["--version", "--json"]));
   assert.equal(versionJson.distribution, "standalone");
   assert.equal(versionJson.build.target, manifest.target);
   smokeInstaller(bundleRoot, manifest.entrypoint, temp);
@@ -32,7 +32,7 @@ try {
   const workspace = join(temp, "workspace");
   await mkdir(workspace, { recursive: true });
   await writeFile(join(workspace, "AGENTS.md"), "# Agents\n");
-  const support = JSON.parse(execFileSync(launcher, ["--workspace", workspace, "--support"], { encoding: "utf8" }));
+  const support = JSON.parse(runLauncherSync(launcher, ["--workspace", workspace, "--support"]));
   assert.equal(support.version.distribution, "standalone");
   assert.equal(support.privacy.syntheticEvents, false);
   assert.equal(support.workspace.root, workspace);
@@ -67,6 +67,7 @@ function startStandalone(launcher, workspace) {
   return new Promise((resolveStart, rejectStart) => {
     const child = spawn(launcher, ["--workspace", workspace, "--port", "0"], {
       cwd: workspace,
+      shell: process.platform === "win32",
       stdio: ["ignore", "pipe", "pipe"]
     });
     let stdout = "";
@@ -102,6 +103,10 @@ function startStandalone(launcher, workspace) {
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function runLauncherSync(launcher, args) {
+  return execFileSync(launcher, args, { encoding: "utf8", shell: process.platform === "win32" });
 }
 
 function smokeInstaller(bundleRoot, entrypoint, temp) {
