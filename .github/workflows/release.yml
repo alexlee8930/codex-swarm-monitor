@@ -1,0 +1,200 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build-standalone:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: codex-swarm-monitor-linux-x64
+          - os: macos-14
+            artifact: codex-swarm-monitor-darwin-arm64
+          - os: macos-15-intel
+            artifact: codex-swarm-monitor-darwin-x64
+          - os: windows-latest
+            artifact: codex-swarm-monitor-win32-x64
+    runs-on: ${{ matrix.os }}
+    env:
+      MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+      MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+      MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+      MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+      WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify release gate
+        run: npm run verify
+
+      - name: Build standalone bundle
+        run: npm run standalone:build
+
+      - name: Sign macOS standalone runtime
+        if: runner.os == 'macOS' && env.MACOS_CERTIFICATE_P12_BASE64 != '' && env.MACOS_CODESIGN_IDENTITY != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/codex-swarm-signing.keychain-db"
+          CERT_PATH="$RUNNER_TEMP/macos-signing-cert.p12"
+          echo "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "$RUNNER_TEMP" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$RUNNER_TEMP" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$RUNNER_TEMP" "$KEYCHAIN_PATH"
+
+          WORK="$RUNNER_TEMP/codex-swarm-sign"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          tar -xzf "dist/${{ matrix.artifact }}.tar.gz" -C "$WORK"
+          codesign --force --options runtime --timestamp --sign "$MACOS_CODESIGN_IDENTITY" "$WORK/${{ matrix.artifact }}/runtime/node"
+          codesign --verify --deep --strict "$WORK/${{ matrix.artifact }}/runtime/node"
+          tar -czf "dist/${{ matrix.artifact }}.tar.gz" -C "$WORK" "${{ matrix.artifact }}"
+          shasum -a 256 "dist/${{ matrix.artifact }}.tar.gz" \
+            | awk -v name="${{ matrix.artifact }}.tar.gz" '{print $1 "  " name}' \
+            > "dist/${{ matrix.artifact }}.tar.gz.sha256"
+
+      - name: Notarize macOS standalone archive
+        if: runner.os == 'macOS' && env.MACOS_NOTARY_APPLE_ID != '' && env.MACOS_NOTARY_TEAM_ID != '' && env.MACOS_NOTARY_PASSWORD != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/codex-swarm-notary"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          tar -xzf "dist/${{ matrix.artifact }}.tar.gz" -C "$WORK"
+          ditto -c -k --keepParent "$WORK/${{ matrix.artifact }}" "dist/${{ matrix.artifact }}.zip"
+          xcrun notarytool submit "dist/${{ matrix.artifact }}.zip" \
+            --apple-id "$MACOS_NOTARY_APPLE_ID" \
+            --team-id "$MACOS_NOTARY_TEAM_ID" \
+            --password "$MACOS_NOTARY_PASSWORD" \
+            --wait
+          shasum -a 256 "dist/${{ matrix.artifact }}.zip" \
+            | awk -v name="${{ matrix.artifact }}.zip" '{print $1 "  " name}' \
+            > "dist/${{ matrix.artifact }}.zip.sha256"
+
+      - name: Sign Windows standalone runtime
+        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE_PFX_BASE64 != ''
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $certPath = Join-Path $env:RUNNER_TEMP "windows-signing-cert.pfx"
+          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX_BASE64))
+          $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $certPath -CertStoreLocation Cert:\CurrentUser\My -Password $password
+          $work = Join-Path $env:RUNNER_TEMP "codex-swarm-sign"
+          Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          tar -xzf "dist/${{ matrix.artifact }}.tar.gz" -C $work
+          $node = Join-Path $work "${{ matrix.artifact }}\runtime\node.exe"
+          Set-AuthenticodeSignature -FilePath $node -Certificate $cert -TimestampServer "http://timestamp.digicert.com" | Format-List
+          $signature = Get-AuthenticodeSignature -FilePath $node
+          if ($signature.Status -ne "Valid") {
+            throw "Windows signature status: $($signature.Status)"
+          }
+          tar -czf "dist/${{ matrix.artifact }}.tar.gz" -C $work "${{ matrix.artifact }}"
+          $hash = (Get-FileHash -Algorithm SHA256 "dist/${{ matrix.artifact }}.tar.gz").Hash.ToLowerInvariant()
+          Set-Content -Path "dist/${{ matrix.artifact }}.tar.gz.sha256" -Value "$hash  ${{ matrix.artifact }}.tar.gz"
+
+      - name: Smoke standalone bundle
+        run: npm run standalone:smoke
+
+      - name: Generate artifact provenance attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/${{ matrix.artifact }}.tar.gz
+            dist/${{ matrix.artifact }}.tar.gz.sha256
+
+      - name: Upload standalone archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/${{ matrix.artifact }}*
+          if-no-files-found: error
+
+  publish-github-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-standalone
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release sources
+        uses: actions/checkout@v4
+
+      - name: Setup Node for release publishing
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install release tooling
+        run: npm ci
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Verify complete release artifact set
+        run: node scripts/verify-release-artifacts.mjs release-artifacts --standalone-only
+
+      - name: Sync Codex plugin release source
+        run: npm run release:sync-source
+
+      - name: Build Codex plugin package
+        run: npm run plugin:package:smoke
+
+      - name: Build Codex marketplace submission
+        run: npm run marketplace:submission:smoke
+
+      - name: Verify complete release asset set
+        run: node scripts/verify-release-artifacts.mjs release-artifacts dist
+
+      - name: Generate plugin package provenance attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/codex-swarm-monitor-plugin-*.tar.gz
+            dist/codex-swarm-monitor-plugin-*.tar.gz.sha256
+            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz
+            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz.sha256
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find release-artifacts -maxdepth 3 -type f -print
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Codex Swarm Monitor standalone runtime and Codex plugin package release." \
+            $(find release-artifacts -maxdepth 3 -type f -print) \
+            dist/codex-swarm-monitor-plugin-*.tar.gz \
+            dist/codex-swarm-monitor-plugin-*.tar.gz.sha256 \
+            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz \
+            dist/codex-swarm-monitor-marketplace-submission-*.tar.gz.sha256

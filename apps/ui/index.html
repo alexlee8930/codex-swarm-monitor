@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codex Swarm Monitor</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">C</div>
+          <div>
+            <h1>Codex Swarm</h1>
+            <p id="system-readiness">Checking Codex...</p>
+          </div>
+        </div>
+        <nav class="repo-nav" aria-label="workspace sections">
+          <a href="#workspace-panel">Workspace</a>
+          <a href="#harness-panel">Harness</a>
+          <a href="#agents-panel">Agents</a>
+          <a href="#events-panel">Events</a>
+        </nav>
+        <form id="workspace-form" class="workspace-picker">
+          <input id="workspace-path" name="path" autocomplete="off" spellcheck="false" placeholder="/path/to/your/codex-project" />
+          <button id="browse-workspace" class="secondary" type="button">Browse</button>
+          <button id="use-current-folder" class="secondary" type="button">Use app folder</button>
+          <button type="submit">Analyze folder</button>
+          <button id="connect-workspace" class="secondary" type="button">Install hooks</button>
+          <button id="disconnect-workspace" class="secondary danger" type="button">Uninstall hooks</button>
+        </form>
+      </header>
+
+      <section class="launch-strip repo-command-strip" aria-label="deployment path">
+        <div>
+          <span>Codex-only launch</span>
+          <span class="launch-command-wrap">
+            <code id="launch-command">codex-swarm-monitor --open</code>
+            <button id="copy-launch" class="icon-button copy-icon" type="button" aria-label="Copy launch command" title="Copy launch command"><span class="sr-only">Copy</span></button>
+          </span>
+        </div>
+        <div>
+          <span>Observe</span>
+          <span class="launch-command-wrap">
+            <code id="codex-command">codex</code>
+            <button id="copy-codex" class="icon-button copy-icon" type="button" aria-label="Copy Codex run command" title="Copy Codex run command"><span class="sr-only">Copy</span></button>
+          </span>
+        </div>
+        <div>
+          <span>Store</span>
+          <strong>Local SQLite only</strong>
+        </div>
+        <div>
+          <span>Status</span>
+          <strong id="install-detail">Select workspace</strong>
+        </div>
+      </section>
+
+      <section id="lifecycle-strip" class="lifecycle-strip" aria-label="monitor lifecycle"></section>
+
+      <section class="status-strip" aria-label="workspace status">
+        <div><strong id="metric-agents">0</strong><span>agents</span></div>
+        <div><strong id="metric-events">0</strong><span>events</span></div>
+        <div><strong id="metric-tools">0</strong><span>tool calls</span></div>
+        <div><strong id="metric-files">0</strong><span>markdown files</span></div>
+        <div id="stream-status-card" class="stream-status-card">
+          <strong id="connection-state">connecting</strong>
+          <span id="stream-detail">waiting for SSE</span>
+        </div>
+      </section>
+
+      <section class="workspace-layout production-workspace-layout">
+        <aside class="left-rail">
+          <section id="quickstart-panel" class="panel quickstart-panel">
+            <div class="panel-title">
+              <h2>Launch Checklist</h2>
+              <span id="quickstart-state">setup</span>
+            </div>
+            <div id="quickstart-list" class="quickstart-list"></div>
+          </section>
+
+          <section id="workspace-panel" class="panel">
+            <div class="panel-title">
+              <h2>Workspace</h2>
+              <span id="install-state">not connected</span>
+            </div>
+            <div id="workspace-summary" class="workspace-summary"></div>
+          </section>
+
+          <section id="trust-panel" class="panel">
+            <div class="panel-title">
+              <h2>Hook Trust</h2>
+              <span id="trust-state">not ready</span>
+            </div>
+            <div id="trust-list" class="trust-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Key Markdown</h2>
+              <span id="md-count-label">0</span>
+            </div>
+            <div id="markdown-list" class="document-list"></div>
+          </section>
+        </aside>
+
+        <section id="harness-panel" class="canvas-panel">
+          <div class="canvas-toolbar">
+            <div>
+              <p class="eyebrow">Harness canvas</p>
+              <h2 id="canvas-title">Select a Codex workspace</h2>
+            </div>
+            <div class="canvas-actions">
+              <button id="refresh-workspace" class="secondary" type="button">Refresh analysis</button>
+              <button id="clear-events" class="secondary danger" type="button">Clear events</button>
+            </div>
+          </div>
+          <div class="canvas-proof-strip" aria-label="production proof points">
+            <span>Native Codex hooks</span>
+            <span>Workspace-scoped SSE</span>
+            <span>No demo events</span>
+            <span>Local Notion-style avatars</span>
+            <span>Local SQLite</span>
+          </div>
+          <section id="repo-context" class="repo-context" aria-label="workspace evidence summary"></section>
+          <div id="harness-canvas" class="harness-canvas"></div>
+
+          <div id="agents-panel" class="agents-section">
+            <div class="panel-title">
+              <h2>Live Agents</h2>
+              <span id="agent-count-label">0</span>
+            </div>
+            <div id="swarm-graph" class="swarm-graph"></div>
+            <div id="agent-grid" class="agent-grid"></div>
+          </div>
+        </section>
+
+        <aside class="right-rail">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Preflight</h2>
+              <span id="doctor-state">checking</span>
+            </div>
+            <div id="doctor-list" class="doctor-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Runtime Databases</h2>
+              <span id="db-count-label">0</span>
+            </div>
+            <div id="database-list" class="database-list"></div>
+          </section>
+
+          <section id="pipeline-panel" class="panel">
+            <div class="panel-title">
+              <h2>Realtime Pipeline</h2>
+              <span id="pipeline-state">waiting</span>
+            </div>
+            <div id="pipeline-list" class="pipeline-list"></div>
+          </section>
+
+          <section id="ops-panel" class="panel">
+            <div class="panel-title">
+              <h2>Operations</h2>
+              <span id="ops-state">local</span>
+            </div>
+            <div id="ops-list" class="ops-list"></div>
+            <div id="release-plan" class="release-plan"></div>
+            <button id="download-support" class="secondary support-button" type="button">Download support bundle</button>
+            <form id="retention-form" class="retention-form">
+              <label for="retention-max">Event retention</label>
+              <div>
+                <input id="retention-max" name="maxEvents" inputmode="numeric" pattern="[0-9]*" />
+                <button class="secondary" type="submit">Apply</button>
+              </div>
+            </form>
+          </section>
+
+          <section id="events-panel" class="panel events-panel">
+            <div class="panel-title">
+              <h2>Live Events</h2>
+              <span id="event-stream-state">connecting</span>
+            </div>
+            <div id="event-log" class="event-log"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

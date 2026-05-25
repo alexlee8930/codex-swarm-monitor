@@ -1,0 +1,45 @@
+{
+  "name": "codex-swarm-monitor",
+  "version": "0.1.0",
+  "description": "Operate the local Codex Swarm Monitor for realtime workspace observability.",
+  "author": {
+    "name": "Codex Swarm Monitor contributors"
+  },
+  "homepage": "https://github.com/alexlee8930/codex-swarm-monitor",
+  "repository": "https://github.com/alexlee8930/codex-swarm-monitor",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "observability",
+    "sse",
+    "local-first",
+    "agent-monitor"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Swarm Monitor",
+    "shortDescription": "Start and connect the local Codex realtime monitor.",
+    "longDescription": "Codex Swarm Monitor provides an operational skill for starting the local realtime dashboard, running preflight checks, connecting a workspace, and verifying native hook observability.",
+    "developerName": "Codex Swarm Monitor contributors",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/alexlee8930/codex-swarm-monitor",
+    "privacyPolicyURL": "https://github.com/alexlee8930/codex-swarm-monitor/blob/main/docs/privacy.md",
+    "termsOfServiceURL": "https://github.com/alexlee8930/codex-swarm-monitor/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Start the Codex Swarm Monitor for this workspace.",
+      "Run the monitor preflight checks for this folder.",
+      "Install monitor hooks and explain what Codex will observe."
+    ],
+    "brandColor": "#0969DA",
+    "screenshots": [
+      {
+        "path": "./assets/screenshots/dashboard-desktop.png",
+        "label": "Realtime local workspace dashboard with Ralph loop analysis"
+      }
+    ]
+  }
+}

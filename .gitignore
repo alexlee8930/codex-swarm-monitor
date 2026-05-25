@@ -1,0 +1,8 @@
+.omx/
+.codex/
+node_modules/
+.cache/
+data/
+dist/
+.env
+.env.*

@@ -1,0 +1,74 @@
+{
+  "name": "codex-swarm-monitor",
+  "version": "0.1.0",
+  "description": "Local-first realtime monitor for Codex workspaces, native hooks, and Ralph/OMX harness structure.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "openai",
+    "observability",
+    "sse",
+    "local-first",
+    "agent-monitor"
+  ],
+  "files": [
+    ".agents",
+    "apps",
+    "plugins",
+    "scripts",
+    "tools",
+    "README.md",
+    "RALPH.md",
+    "LICENSE",
+    "marketplace.json"
+  ],
+  "bin": {
+    "codex-swarm-monitor": "apps/backend/src/index.mjs",
+    "codex-swarm-hook": "scripts/codex-swarm-hook.mjs"
+  },
+  "scripts": {
+    "dev": "node apps/backend/src/index.mjs",
+    "dev:ui": "node apps/backend/src/index.mjs",
+    "test": "node --test",
+    "lint": "node --check apps/backend/src/folder-picker.mjs && node --check apps/backend/src/index.mjs && node --check apps/backend/src/meta.mjs && node --check apps/backend/src/release-readiness.mjs && node --check apps/backend/src/server.mjs && node --check apps/backend/src/store.mjs && node --check apps/backend/src/support-bundle.mjs && node --check apps/backend/src/system.mjs && node --check apps/backend/src/workspace.mjs && node --check apps/ui/app.js && node --check scripts/artifact-audit.mjs && node --check scripts/avatar-smoke.mjs && node --check scripts/bootstrap-smoke.mjs && node --check scripts/build-marketplace-submission.mjs && node --check scripts/build-plugin-package.mjs && node --check scripts/build-release-artifacts.mjs && node --check scripts/build-standalone.mjs && node --check scripts/codex-only-smoke.mjs && node --check scripts/codex-swarm-hook.mjs && node --check scripts/fresh-machine-smoke.mjs && node --check scripts/marketplace-submission-smoke.mjs && node --check scripts/package-smoke.mjs && node --check scripts/plugin-package-smoke.mjs && node --check scripts/plugin-smoke.mjs && node --check scripts/realtime-smoke.mjs && node --check scripts/refresh-marketplace-screenshot.mjs && node --check scripts/release-audit.mjs && node --check scripts/release-readiness.mjs && node --check scripts/runtime-smoke.mjs && node --check scripts/standalone-smoke.mjs && node --check scripts/sync-plugin-release-source.mjs && node --check scripts/sync-release-source-smoke.mjs && node --check scripts/verify-release-artifacts.mjs && node --check tools/agent-spawner/server.mjs && node --check tools/agent-spawner/spawn.mjs",
+    "typecheck": "npm run lint",
+    "package:smoke": "node scripts/package-smoke.mjs",
+    "avatar:smoke": "node scripts/avatar-smoke.mjs",
+    "plugin:smoke": "node scripts/plugin-smoke.mjs",
+    "plugin:package": "node scripts/build-plugin-package.mjs",
+    "plugin:package:smoke": "node scripts/plugin-package-smoke.mjs",
+    "marketplace:submission": "node scripts/build-marketplace-submission.mjs",
+    "marketplace:submission:smoke": "node scripts/marketplace-submission-smoke.mjs",
+    "release:sync-source": "node scripts/sync-plugin-release-source.mjs",
+    "release:sync-source:smoke": "node scripts/sync-release-source-smoke.mjs",
+    "release:audit": "node scripts/release-audit.mjs",
+    "screenshot:marketplace": "node scripts/refresh-marketplace-screenshot.mjs",
+    "release:readiness": "node scripts/release-readiness.mjs",
+    "release:artifacts": "node scripts/verify-release-artifacts.mjs",
+    "artifact:audit": "node scripts/artifact-audit.mjs",
+    "bootstrap:smoke": "node scripts/bootstrap-smoke.mjs",
+    "codex-only:smoke": "node scripts/codex-only-smoke.mjs",
+    "fresh:smoke": "node scripts/fresh-machine-smoke.mjs",
+    "realtime:smoke": "node scripts/realtime-smoke.mjs",
+    "standalone:build": "node scripts/build-standalone.mjs",
+    "standalone:build:all": "node scripts/build-release-artifacts.mjs",
+    "standalone:smoke": "node scripts/standalone-smoke.mjs",
+    "runtime:smoke": "node scripts/runtime-smoke.mjs",
+    "verify": "npm run lint && npm test && npm run package:smoke && npm run avatar:smoke && npm run plugin:smoke && npm run plugin:package:smoke && npm run release:audit && npm run standalone:smoke && npm run artifact:audit && npm run bootstrap:smoke && npm run codex-only:smoke && npm run fresh:smoke && npm run realtime:smoke && npm run runtime:smoke && npm run release:sync-source:smoke && node tools/agent-spawner/test_spawn.mjs",
+    "release:verify": "npm run verify && npm run standalone:build:all && npm run marketplace:submission:smoke && npm run release:artifacts -- dist && npm run release:readiness -- --no-published-inspection",
+    "mcp:agent-spawner": "node tools/agent-spawner/server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexlee8930/codex-swarm-monitor.git"
+  },
+  "homepage": "https://github.com/alexlee8930/codex-swarm-monitor"
+}
