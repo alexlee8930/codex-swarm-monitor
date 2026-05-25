@@ -10,10 +10,9 @@ import { pathToFileURL } from "node:url";
 
 const root = resolve(import.meta.dirname, "..");
 const temp = mkdtempSync(join(tmpdir(), "codex-swarm-package-"));
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 try {
-  const packOutput = execFileSync(npmCommand, ["pack", "--json"], { cwd: root, encoding: "utf8" });
+  const packOutput = npmPackJson(root);
   const [{ filename }] = JSON.parse(packOutput);
   const tarball = join(root, filename);
   execFileSync("tar", ["-xzf", tarball, "-C", temp], { stdio: "pipe" });
@@ -100,6 +99,14 @@ try {
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function npmPackJson(cwd) {
+  if (process.env.npm_execpath) {
+    return execFileSync(process.execPath, [process.env.npm_execpath, "pack", "--json"], { cwd, encoding: "utf8" });
+  }
+  const command = process.platform === "win32" ? "npm.cmd" : "npm";
+  return execFileSync(command, ["pack", "--json"], { cwd, encoding: "utf8", shell: process.platform === "win32" });
 }
 
 function runPackedCli(packedRoot, workspace) {
