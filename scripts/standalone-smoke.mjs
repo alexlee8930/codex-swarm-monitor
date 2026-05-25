@@ -116,6 +116,14 @@ function stopChild(child) {
       clearTimeout(timer);
       resolveStop();
     });
+    if (process.platform === "win32" && child.pid) {
+      try {
+        execFileSync("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+      } catch {
+        child.kill("SIGTERM");
+      }
+      return;
+    }
     child.kill("SIGTERM");
   });
 }
